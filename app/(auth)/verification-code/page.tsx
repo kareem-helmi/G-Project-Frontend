@@ -32,7 +32,6 @@ function VerificationContent() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // ✅ FIX: Get email from URL params
   useEffect(() => {
     const emailParam = searchParams.get("email");
     if (emailParam) {
@@ -53,7 +52,7 @@ function VerificationContent() {
       const verificationCode = code.join("");
       console.log("Verifying code:", verificationCode);
 
-      // TODO: Replace with actual API call
+      // Replace with actual API call
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
       router.push("/reset-password");

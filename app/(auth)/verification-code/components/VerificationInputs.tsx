@@ -47,7 +47,7 @@ export function VerificationInputs({ code, setCode }: VerificationInputsProps) {
 
     return (
         <motion.div variants={FADE_UP} className="w-full">
-            <div className="flex justify-between gap-2">
+            <div className="flex justify-center gap-1.5 sm:gap-2 w-full">
                 {code.map((digit, index) => (
                     <input
                         key={index}

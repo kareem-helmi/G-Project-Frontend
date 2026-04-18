@@ -51,7 +51,7 @@ export default function AuthContainer({
                     <ThemeToggleDefault />
                 </motion.div>
 
-                {showBackButton && (  // ← بقى شرط واحد بس
+                {showBackButton && (  
                     <button
                         onClick={handleBack}
                         className="absolute top-3 left-3 sm:top-5 sm:left-5 z-10
@@ -60,7 +60,7 @@ export default function AuthContainer({
                        flex items-center gap-2 text-sm sm:text-base
                        hover:scale-105 active:scale-95"
                     >
-                        <span className="text-lg">←</span>
+                        <span className="text-2xl">←</span>
                         <span className="hidden sm:inline">Back</span>
                     </button>
                 )}
