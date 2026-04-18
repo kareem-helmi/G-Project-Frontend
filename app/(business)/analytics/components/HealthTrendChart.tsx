@@ -1,4 +1,3 @@
-// app/(business)/analytics/components/HealthTrendChart.tsx
 "use client";
 
 import React from "react";

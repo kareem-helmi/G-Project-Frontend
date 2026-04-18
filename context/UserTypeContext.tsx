@@ -1,13 +1,14 @@
-// /context/UserTypeContext.tsx
 "use client";
 
 import { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { tempStorage } from '@/lib/utils/storage';
 
-// تعريف نوعين فقط
+// ==========================================
+// TYPES
+// ==========================================
 export type UserType = 'individual' | 'business';
 
-// نوع البيانات المخزنة
-interface UserDetails {
+export interface UserDetails {
     id?: string;
     email?: string;
     name?: string;
@@ -16,111 +17,112 @@ interface UserDetails {
     [key: string]: any;
 }
 
-// نوع Context
+export interface LoginCredentials {
+    email: string;
+    password: string;
+}
+
 interface UserTypeContextType {
     userType: UserType;
     setUserType: (type: UserType) => void;
     userDetails: UserDetails | null;
     setUserDetails: (details: UserDetails | null) => void;
     isAuthenticated: boolean;
-    login: (type: UserType, credentials: { email: string; password: string }) => Promise<void>;
+    login: (credentials: LoginCredentials) => Promise<UserType>;
     register: (type: UserType, data: any) => Promise<void>;
     logout: () => void;
 }
 
-// القيمة الافتراضية
+// ==========================================
+// DEFAULT CONTEXT
+// ==========================================
 const defaultContext: UserTypeContextType = {
     userType: 'individual',
     setUserType: () => { },
     userDetails: null,
     setUserDetails: () => { },
     isAuthenticated: false,
-    login: async () => { },
+    login: async () => 'individual',
     register: async () => { },
     logout: () => { }
 };
 
-// إنشاء Context
 const UserTypeContext = createContext<UserTypeContextType>(defaultContext);
 
-// Props للموفر
+// ==========================================
+// PROVIDER
+// ==========================================
 interface UserTypeProviderProps {
     children: ReactNode;
 }
 
-// الموفر الرئيسي
 export function UserTypeProvider({ children }: UserTypeProviderProps) {
     const [userType, setUserType] = useState<UserType>('individual');
     const [userDetails, setUserDetails] = useState<UserDetails | null>(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
-    // استعادة حالة المستخدم من localStorage عند التحميل
+    // ==========================================
+    // LOAD USER DATA FROM tempStorage
+    // ==========================================
     useEffect(() => {
-        const loadUserData = () => {
-            try {
-                if (typeof window === 'undefined') {
-                    setIsLoading(false);
-                    return;
-                }
+        try {
+            const savedType = tempStorage.get<UserType>('userType');
+            const savedDetails = tempStorage.get<UserDetails>('userDetails');
+            const savedAuth = tempStorage.get<boolean>('isAuthenticated');
 
-                const savedType = localStorage.getItem('userType') as UserType | null;
-                const savedDetails = localStorage.getItem('userDetails');
-                const savedAuth = localStorage.getItem('isAuthenticated');
-
-                if (savedType && (savedType === 'individual' || savedType === 'business')) {
-                    setUserType(savedType);
-                }
-                if (savedDetails) {
-                    try {
-                        setUserDetails(JSON.parse(savedDetails));
-                    } catch (parseError) {
-                        console.error('Error parsing user details:', parseError);
-                    }
-                }
-                if (savedAuth === 'true') {
-                    setIsAuthenticated(true);
-                }
-            } catch (error) {
-                console.error('Error loading user data:', error);
-            } finally {
-                setIsLoading(false);
+            if (savedType === 'individual' || savedType === 'business') {
+                setUserType(savedType);
             }
-        };
-
-        loadUserData();
+            if (savedDetails) {
+                setUserDetails(savedDetails);
+            }
+            if (savedAuth === true) {
+                setIsAuthenticated(true);
+            }
+        } catch (error) {
+            console.error('Error loading user data:', error);
+        } finally {
+            setIsLoading(false);
+        }
     }, []);
 
-    // وظيفة تسجيل الدخول
-    const login = async (type: UserType, credentials: { email: string; password: string }) => {
+    // ==========================================
+    // LOGIN
+    // ==========================================
+    const login = async (credentials: LoginCredentials): Promise<UserType> => {
         setIsLoading(true);
         try {
-            // محاكاة API call
-            console.log(`Logging in as ${type}`, credentials);
+            // Simulate API call
             await new Promise(resolve => setTimeout(resolve, 1000));
 
-            // بيانات وهمية للاختبار
+            // Determine user type based on email
+            const determinedType: UserType =
+                credentials.email.includes('@hospital.') ||
+                    credentials.email.includes('@clinic.') ||
+                    credentials.email.includes('@medical.')
+                    ? 'business'
+                    : 'individual';
+
             const mockUserDetails: UserDetails = {
                 id: Math.random().toString(36).substring(7),
                 email: credentials.email,
-                name: type === 'individual' ? 'John Doe' : 'MedCorp Inc.',
-                businessName: type === 'business' ? 'MedCorp Inc.' : undefined,
-                role: type,
+                name: determinedType === 'individual' ? 'John Doe' : 'MedCorp Inc.',
+                businessName: determinedType === 'business' ? 'MedCorp Inc.' : undefined,
+                role: determinedType,
                 createdAt: new Date().toISOString()
             };
 
-            // تحديث الحالة
-            setUserType(type);
+            setUserType(determinedType);
             setUserDetails(mockUserDetails);
             setIsAuthenticated(true);
 
-            // حفظ في localStorage
-            if (typeof window !== 'undefined') {
-                localStorage.setItem('userType', type);
-                localStorage.setItem('userDetails', JSON.stringify(mockUserDetails));
-                localStorage.setItem('isAuthenticated', 'true');
-            }
+            // Save to tempStorage
+            tempStorage.set('userType', determinedType);
+            tempStorage.set('userDetails', mockUserDetails);
+            tempStorage.set('isAuthenticated', true);
 
+            return determinedType;
         } catch (error) {
             console.error('Login failed:', error);
             throw error;
@@ -129,15 +131,15 @@ export function UserTypeProvider({ children }: UserTypeProviderProps) {
         }
     };
 
-    // وظيفة التسجيل
+    // ==========================================
+    // REGISTER
+    // ==========================================
     const register = async (type: UserType, data: any) => {
         setIsLoading(true);
         try {
-            // محاكاة API call للتسجيل
-            console.log(`Registering as ${type}`, data);
+            // Simulate API call
             await new Promise(resolve => setTimeout(resolve, 1500));
 
-            // بيانات وهمية بعد التسجيل
             const newUserDetails: UserDetails = {
                 id: Math.random().toString(36).substring(7),
                 email: data.email,
@@ -148,18 +150,14 @@ export function UserTypeProvider({ children }: UserTypeProviderProps) {
                 ...data
             };
 
-            // تحديث الحالة
             setUserType(type);
             setUserDetails(newUserDetails);
             setIsAuthenticated(true);
 
-            // حفظ في localStorage
-            if (typeof window !== 'undefined') {
-                localStorage.setItem('userType', type);
-                localStorage.setItem('userDetails', JSON.stringify(newUserDetails));
-                localStorage.setItem('isAuthenticated', 'true');
-            }
-
+            // Save to tempStorage
+            tempStorage.set('userType', type);
+            tempStorage.set('userDetails', newUserDetails);
+            tempStorage.set('isAuthenticated', true);
         } catch (error) {
             console.error('Registration failed:', error);
             throw error;
@@ -168,21 +166,23 @@ export function UserTypeProvider({ children }: UserTypeProviderProps) {
         }
     };
 
-    // وظيفة تسجيل الخروج
+    // ==========================================
+    // LOGOUT
+    // ==========================================
     const logout = () => {
         setUserType('individual');
         setUserDetails(null);
         setIsAuthenticated(false);
 
-        // حذف من localStorage
-        if (typeof window !== 'undefined') {
-            localStorage.removeItem('userType');
-            localStorage.removeItem('userDetails');
-            localStorage.removeItem('isAuthenticated');
-        }
+        // Clear from tempStorage
+        tempStorage.remove('userType');
+        tempStorage.remove('userDetails');
+        tempStorage.remove('isAuthenticated');
     };
 
-    // القيمة التي يتم تمريرها
+    // ==========================================
+    // CONTEXT VALUE
+    // ==========================================
     const contextValue: UserTypeContextType = {
         userType,
         setUserType,
@@ -194,7 +194,6 @@ export function UserTypeProvider({ children }: UserTypeProviderProps) {
         logout
     };
 
-    // إرجاع الموفر
     return (
         <UserTypeContext.Provider value={contextValue}>
             {children}
@@ -202,16 +201,15 @@ export function UserTypeProvider({ children }: UserTypeProviderProps) {
     );
 }
 
-// هوك لاستخدام Context
-export function useUserType() {
+// ==========================================
+// HOOK
+// ==========================================
+export function useUserType(): UserTypeContextType {
     const context = useContext(UserTypeContext);
-
-    if (context === undefined) {
+    if (!context) {
         throw new Error('useUserType must be used within a UserTypeProvider');
     }
-
     return context;
 }
 
-// تصدير الـ Context نفسه إذا احتجته
 export default UserTypeContext;

@@ -1,4 +1,3 @@
-// app/auth/shared/FormLabel.tsx
 "use client";
 
 interface FormLabelProps {

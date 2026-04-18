@@ -1,14 +1,17 @@
-// app/(business)/upload-data/page.tsx
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { getUploadedFiles, deleteUploadedFile, uploadFile } from "../lib/api";
-import type { UploadedFile } from "../lib/api";
+import { Activity, FileText } from "lucide-react";
+import { UploadedFile } from "@/types";
+import {
+    getUploadedFiles,
+    deleteUploadedFile,
+    uploadFile
+} from "@/lib/services/business.service";
 import UploadOptions from "./components/UploadOptions";
 import SinglePatientForm from "./components/SinglePatientForm";
 import FileUploadSection from "./components/FileUploadSection";
 import AnalysisResult from "./components/AnalysisResult";
-import { Activity, FileText } from "lucide-react";
 
 type UploadOption = "single" | "batch";
 
@@ -29,6 +32,9 @@ interface AnalysisData {
 }
 
 export default function UploadDataPage() {
+    // ==========================================
+    // STATE
+    // ==========================================
     const [selectedOption, setSelectedOption] = useState<UploadOption>("single");
     const [files, setFiles] = useState<UploadedFile[]>([]);
     const [loading, setLoading] = useState(true);
@@ -36,7 +42,9 @@ export default function UploadDataPage() {
     const [analyzing, setAnalyzing] = useState(false);
     const [analysisResult, setAnalysisResult] = useState<AnalysisData | null>(null);
 
-    // تحميل قائمة الملفات المرفوعة
+    // ==========================================
+    // LOAD UPLOADED FILES
+    // ==========================================
     useEffect(() => {
         loadFiles();
     }, []);
@@ -47,20 +55,28 @@ export default function UploadDataPage() {
             const data = await getUploadedFiles();
             setFiles(data);
         } catch (err) {
-            console.error(err);
+            console.error("Failed to load files:", err);
         } finally {
             setLoading(false);
         }
     };
 
-    // معالجة تحليل بيانات مريض واحد
-    const handleSinglePatientSubmit = async (data: PatientFormData, file?: File) => {
+    // ==========================================
+    // HANDLE SINGLE PATIENT ANALYSIS
+    // ==========================================
+    const handleSinglePatientSubmit = async (
+        data: PatientFormData,
+        file?: File
+    ) => {
         setAnalyzing(true);
         try {
-            // محاكاة API call للتحليل
+            // TODO: Replace with real API call
+            // const result = await analyzePatientData(data, file);
+
+            // Simulate API delay
             await new Promise(resolve => setTimeout(resolve, 2000));
 
-            // بيانات وهمية للنتيجة (ستستبدل بـ API حقيقي)
+            // Mock analysis result (replace with real API response)
             const mockResult: AnalysisData = {
                 status: "Stable",
                 riskLevel: 35,
@@ -82,16 +98,26 @@ export default function UploadDataPage() {
         }
     };
 
-    // معالجة رفع ملف
+    // ==========================================
+    // HANDLE FILE UPLOAD
+    // ==========================================
     const handleFileUpload = async (file: File) => {
         setUploading(true);
         try {
-            const success = await uploadFile(file);
-            if (success) {
-                alert("File uploaded successfully!");
-                await loadFiles(); // تحديث قائمة الملفات
+            const result = await uploadFile(file);
+
+            if (result.success) {
+                // Show success message
+                const successMsg = document.createElement('div');
+                successMsg.className = 'fixed top-20 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-in slide-in-from-right';
+                successMsg.textContent = 'File uploaded successfully!';
+                document.body.appendChild(successMsg);
+                setTimeout(() => successMsg.remove(), 3000);
+
+                // Reload files list
+                await loadFiles();
             } else {
-                alert("Upload failed. Please try again.");
+                alert(result.error || "Upload failed. Please try again.");
             }
         } catch (err) {
             console.error("Upload failed:", err);
@@ -101,28 +127,44 @@ export default function UploadDataPage() {
         }
     };
 
+    // ==========================================
+    // HANDLE FILE DELETE
+    // ==========================================
     const handleDelete = async (id: string) => {
-        const success = await deleteUploadedFile(id);
-        if (success) {
-            setFiles(prev => prev.filter(f => f.id !== id));
+        try {
+            const result = await deleteUploadedFile(id);
+            if (result.success) {
+                setFiles(prev => prev.filter(f => f.id !== id));
+            }
+        } catch (err) {
+            console.error("Delete failed:", err);
+            alert("Failed to delete file");
         }
     };
 
+    // ==========================================
+    // RESET ANALYSIS
+    // ==========================================
     const resetAnalysis = () => {
         setAnalysisResult(null);
     };
 
+    // ==========================================
+    // RENDER
+    // ==========================================
     return (
         <div className="w-full space-y-8">
             {/* Header */}
             <div>
-                <h1 className="text-3xl font-bold text-bluelight-1 mb-2">Patient Health Analysis</h1>
+                <h1 className="text-3xl font-bold text-bluelight-1 mb-2">
+                    Patient Health Analysis
+                </h1>
                 <p className="text-bluelight-1/60">
                     Upload patient data for AI-powered health risk analysis
                 </p>
             </div>
 
-            {/* إذا كانت هناك نتيجة تحليل، اعرضها */}
+            {/* Show Analysis Result */}
             {analysisResult ? (
                 <AnalysisResult
                     status={analysisResult.status}
@@ -132,16 +174,18 @@ export default function UploadDataPage() {
                 />
             ) : (
                 <>
-                    {/* خيارات الرفع */}
+                    {/* Upload Options */}
                     <div className="space-y-4">
-                        <h2 className="text-xl font-semibold text-bluelight-1">Select Analysis Type</h2>
+                        <h2 className="text-xl font-semibold text-bluelight-1">
+                            Select Analysis Type
+                        </h2>
                         <UploadOptions
                             selectedOption={selectedOption}
                             onOptionSelect={setSelectedOption}
                         />
                     </div>
 
-                    {/* نموذج المريض الفردي */}
+                    {/* Single Patient Form */}
                     {selectedOption === "single" && (
                         <div className="bg-transparent border-2 border-bluelight-1/40 rounded-2xl p-6">
                             <div className="flex items-center gap-3 mb-6">
@@ -157,7 +201,7 @@ export default function UploadDataPage() {
                         </div>
                     )}
 
-                    {/* رفع ملف */}
+                    {/* Batch File Upload */}
                     {selectedOption === "batch" && (
                         <div className="bg-transparent border-2 border-bluelight-1/40 rounded-2xl p-6">
                             <div className="flex items-center gap-3 mb-6">
@@ -172,8 +216,6 @@ export default function UploadDataPage() {
                             />
                         </div>
                     )}
-
-
                 </>
             )}
         </div>

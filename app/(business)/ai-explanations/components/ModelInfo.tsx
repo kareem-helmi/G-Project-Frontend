@@ -1,4 +1,3 @@
-// app/(business)/ai-explanations/components/ModelInfo.tsx
 "use client";
 
 import React from "react";
@@ -21,7 +20,7 @@ export default function ModelInfo({
 }: ModelInfoProps) {
     if (loading) {
         return (
-            <div className="bg-gradient-to-br from-bluelight-1/5 to-cyan-500/5 border-2 border-bluelight-1/40 rounded-xl sm:rounded-2xl p-4 sm:p-6 animate-pulse">
+            <div className="bg-linear-to-br from-bluelight-1/5 to-cyan-500/5 border-2 border-bluelight-1/40 rounded-xl sm:rounded-2xl p-4 sm:p-6 animate-pulse">
                 <div className="h-6 bg-bluelight-1/20 rounded w-3/4 mb-4"></div>
                 <div className="h-4 bg-bluelight-1/20 rounded w-1/2 mb-6"></div>
                 <div className="h-32 bg-bluelight-1/20 rounded"></div>
@@ -30,10 +29,10 @@ export default function ModelInfo({
     }
 
     return (
-        <div className="bg-gradient-to-br from-bluelight-1/5 to-cyan-500/5 border-2 border-bluelight-1/40 rounded-xl sm:rounded-2xl p-4 sm:p-6">
+        <div className="bg-linear-to-br from-bluelight-1/5 to-cyan-500/5 border-2 border-bluelight-1/40 rounded-xl sm:rounded-2xl p-4 sm:p-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 sm:mb-6 gap-3">
                 <div className="flex items-center gap-3">
-                    <div className="p-2 sm:p-3 bg-gradient-to-r from-bluelight-1 to-cyan-500 rounded-lg sm:rounded-xl">
+                    <div className="p-2 sm:p-3 bg-linear-to-r from-bluelight-1 to-cyan-500 rounded-lg sm:rounded-xl">
                         <Brain className="text-white" size={20} />
                     </div>
                     <div>
@@ -59,7 +58,7 @@ export default function ModelInfo({
                     </div>
                     <div className="w-full h-1.5 sm:h-2 bg-bluelight-1/20 rounded-full overflow-hidden">
                         <div
-                            className="h-full bg-gradient-to-r from-bluelight-1 to-cyan-500"
+                            className="h-full bg-linear-to-r from-bluelight-1 to-cyan-500"
                             style={{ width: `${accuracy}%` }}
                         />
                     </div>

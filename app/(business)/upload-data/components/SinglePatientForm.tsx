@@ -1,4 +1,3 @@
-// app/(business)/upload-data/components/SinglePatientForm.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -80,7 +79,7 @@ export default function SinglePatientForm({ onSubmit, loading }: SinglePatientFo
 
             {/* Additional Information */}
             <div className="space-y-2">
-                <label className="block text-sm font-medium text-bluelight-1 flex items-center gap-2">
+                <label className="text-sm font-medium text-bluelight-1 flex items-center gap-2">
                     <Info size={16} />
                     Enter More Information (Optional)
                 </label>
@@ -96,7 +95,7 @@ export default function SinglePatientForm({ onSubmit, loading }: SinglePatientFo
 
             {/* File Upload */}
             <div className="space-y-2">
-                <label className="block text-sm font-medium text-bluelight-1 flex items-center gap-2">
+                <label className="block text-sm font-medium text-bluelight-1 items-center gap-2">
                     <Upload size={16} />
                     Upload File (Optional)
                 </label>
@@ -126,7 +125,7 @@ export default function SinglePatientForm({ onSubmit, loading }: SinglePatientFo
             <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-4 bg-gradient-to-r from-bluelight-1 to-cyan-500 text-white rounded-xl font-semibold text-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full py-4 bg-linear-to-r from-bluelight-1 to-cyan-500 text-white rounded-xl font-semibold text-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
             >
                 {loading ? "Analyzing..." : "Analyze Patient Data"}
             </button>

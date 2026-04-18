@@ -1,7 +1,8 @@
 import React from "react";
 
+import { Settings } from "@/types";
 
-export default function DataRetentionCard({ dataRetention, onChange }: { dataRetention: any; onChange: (payload: any) => void }) {
+export default function DataRetentionCard({ dataRetention, onChange }: { dataRetention: Settings['dataRetention']; onChange: (payload: Settings['dataRetention']) => void }) {
     return (
         <div className="bg-white/80 dark:bg-transparent p-6 border-2 border-bluelight-1/40 rounded-xl backdrop-blur-sm">
             <h2 className="text-lg font-semibold text-bluelight-1 mb-4">Data Retention</h2>

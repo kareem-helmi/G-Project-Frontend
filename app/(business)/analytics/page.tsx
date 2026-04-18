@@ -1,46 +1,52 @@
-// app/(business)/analytics/page.tsx
 "use client";
 
 import React, { useEffect, useState } from "react";
 import AnalyticsHeader from "./components/AnalyticsHeader";
-import PatientSelector, { Patient } from "./components/PatientSelector";
+import PatientSelector from "./components/PatientSelector";
 import TimeRangeSelector from "./components/TimeRangeSelector";
 import VitalSignsGrid from "./components/VitalSignsGrid";
 import HealthTrendChart from "./components/HealthTrendChart";
 import RiskGauge from "./components/RiskGauge";
 import RiskFactors from "./components/RiskFactors";
 import GenerateReportButton from "../components/GenerateReportButton";
-import {
-    getAllPatients,
-    getPatientAnalytics,
-    type PatientAnalyticsData,
-    type Patient as ApiPatient
-} from "../lib/api";
 
-type TimeRange = "1" | "3" | "6";
+import { Patient, PatientAnalyticsData } from "@/types/business.types";
+import { TimeRange } from "@/types/analytics.types";
+import { getAllPatients, getPatientAnalytics } from "@/lib/services/business.service";
+import { toPatientSelectorOptions, filterHealthTrendByTimeRange } from "@/lib/utils/analytics.utils";
 
 export default function AnalyticsPage() {
+    // ==========================================
+    // STATE
+    // ==========================================
     const [selectedPatient, setSelectedPatient] = useState<string>("p001");
     const [timeRange, setTimeRange] = useState<TimeRange>("6");
     const [data, setData] = useState<PatientAnalyticsData | null>(null);
-    const [patients, setPatients] = useState<ApiPatient[]>([]);
+    const [patients, setPatients] = useState<Patient[]>([]);
     const [loading, setLoading] = useState(true);
     const [generatingReport, setGeneratingReport] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
+    // ==========================================
+    // LOAD PATIENTS LIST
+    // ==========================================
     useEffect(() => {
-        // تحميل قائمة المرضى
-        const loadPatients = async () => {
+        async function loadPatients() {
             try {
                 const patientsData = await getAllPatients();
                 setPatients(patientsData);
             } catch (err) {
                 console.error("Failed to load patients:", err);
+                setError("Failed to load patients list");
             }
-        };
+        }
 
         loadPatients();
     }, []);
 
+    // ==========================================
+    // LOAD ANALYTICS DATA
+    // ==========================================
     useEffect(() => {
         let mounted = true;
 
@@ -48,69 +54,118 @@ export default function AnalyticsPage() {
             if (!selectedPatient) return;
 
             setLoading(true);
+            setError(null);
+
             try {
-                // استخدام API الحقيقي
                 const patientData = await getPatientAnalytics(selectedPatient);
 
                 if (!mounted) return;
 
                 if (!patientData) {
-                    console.warn(`No analytics data found for patient ${selectedPatient}`);
+                    setError(`No analytics data found for patient ${selectedPatient}`);
+                    setData(null);
                     return;
                 }
 
-                // تصفية البيانات حسب الفترة الزمنية
-                const filteredData = {
+                // Filter health trend by time range
+                const filteredData: PatientAnalyticsData = {
                     ...patientData,
-                    healthTrend: patientData.healthTrend.slice(-parseInt(timeRange))
+                    healthTrend: filterHealthTrendByTimeRange(
+                        patientData.healthTrend,
+                        timeRange
+                    )
                 };
 
                 setData(filteredData);
             } catch (err) {
                 console.error("Failed to load analytics:", err);
+                setError("Failed to load analytics data");
+                setData(null);
             } finally {
-                if (mounted) setLoading(false);
+                if (mounted) {
+                    setLoading(false);
+                }
             }
         }
 
         loadAnalytics();
 
-        return () => { mounted = false; };
+        return () => {
+            mounted = false;
+        };
     }, [selectedPatient, timeRange]);
 
-    const handleGenerateReport = () => {
+    // ==========================================
+    // GENERATE REPORT HANDLER
+    // ==========================================
+    const handleGenerateReport = async () => {
         if (!data) return;
 
         setGeneratingReport(true);
-        setTimeout(() => {
+
+        try {
+            // TODO: Replace with real API call
+            await new Promise(resolve => setTimeout(resolve, 1500));
             alert(`Report generation for ${data.patientName} will be implemented by Backend`);
+        } catch (err) {
+            console.error("Failed to generate report:", err);
+            alert("Failed to generate report");
+        } finally {
             setGeneratingReport(false);
-        }, 1500);
+        }
     };
 
-    // تحويل ApiPatient إلى Patient للنوع المطلوب
-    const formattedPatients: Patient[] = patients.map(patient => ({
-        id: patient.id,
-        name: patient.name,
-        risk: patient.risk
-    }));
+    // ==========================================
+    // CONVERT PATIENTS TO SELECTOR OPTIONS
+    // ==========================================
+    const patientOptions = toPatientSelectorOptions(patients);
 
-    if (loading || !data) {
+    // ==========================================
+    // LOADING STATE
+    // ==========================================
+    if (loading) {
         return (
             <div className="w-full min-h-screen flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-4 border-bluelight-1 border-t-transparent"></div>
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-bluelight-1 border-t-transparent mx-auto mb-4"></div>
+                    <p className="text-bluelight-1 font-medium">Loading analytics...</p>
+                </div>
             </div>
         );
     }
 
+    // ==========================================
+    // ERROR STATE
+    // ==========================================
+    if (error || !data) {
+        return (
+            <div className="w-full min-h-screen flex items-center justify-center">
+                <div className="text-center max-w-md p-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+                    <p className="text-red-600 dark:text-red-400 font-medium mb-4">
+                        {error || "No analytics data available"}
+                    </p>
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="px-4 py-2 bg-bluelight-1 text-white rounded-lg hover:bg-bluelight-2 transition-colors"
+                    >
+                        Retry
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
+    // ==========================================
+    // MAIN RENDER
+    // ==========================================
     return (
         <div className="w-full space-y-6">
-            {/* Header */}
+            {/* Header with Filters */}
             <AnalyticsHeader title="Analytics Dashboard">
                 <div className="flex flex-col sm:flex-row gap-4">
                     <div className="flex-1">
                         <PatientSelector
-                            patients={formattedPatients}
+                            patients={patientOptions}
                             selectedPatient={selectedPatient}
                             onPatientChange={setSelectedPatient}
                         />
@@ -162,6 +217,7 @@ export default function AnalyticsPage() {
                 </h3>
                 <RiskFactors riskFactors={data.riskFactors} />
 
+                {/* Legend */}
                 <div className="mt-6 pt-4 border-t border-bluelight-1/30 flex items-center justify-center gap-6">
                     <div className="flex items-center gap-2">
                         <div className="w-3 h-3 rounded-full bg-green-500"></div>

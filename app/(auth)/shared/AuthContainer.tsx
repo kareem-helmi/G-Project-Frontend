@@ -1,4 +1,3 @@
-// app/auth/shared/AuthContainer.tsx
 "use client";
 import { motion, Variants } from "framer-motion";
 import ThemeToggleDefault from "@/components/custom/ThemeToggleDefault";

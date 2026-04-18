@@ -1,9 +1,10 @@
-// DiseaseProgressionChart.tsx
 "use client";
 import React from "react";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts";
 
-export default function DiseaseProgressionChart({ data = [], loading = false }: { data?: any[]; loading?: boolean }) {
+import { DiseaseProgressionPoint } from "@/types";
+
+export default function DiseaseProgressionChart({ data = [], loading = false }: { data?: DiseaseProgressionPoint[]; loading?: boolean }) {
     if (loading) return <div className="h-full flex items-center justify-center text-bluelight-1/60">Loading chart...</div>;
     return (
         <ResponsiveContainer width="100%" height="100%">

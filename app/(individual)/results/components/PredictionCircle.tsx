@@ -1,6 +1,6 @@
 "use client";
 import { motion } from "framer-motion";
-import { RiskLevel } from "../../lib/types"; // ⬅️ تأكد من الاستيراد هنا أيضاً
+import { RiskLevel } from "@/types/individual.types";
 
 interface PredictionCircleProps {
     percentage: number;
@@ -25,7 +25,7 @@ export default function PredictionCircle({ percentage, riskLevel }: PredictionCi
                 text: 'text-green-500',
                 bg: 'bg-green-500/10'
             };
-            default: return { // ⬅️ أضف حالة افتراضية
+            default: return {
                 border: 'border-gray-500/30',
                 text: 'text-gray-500',
                 bg: 'bg-gray-500/10'

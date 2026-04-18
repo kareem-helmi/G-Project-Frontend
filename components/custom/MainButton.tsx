@@ -26,7 +26,7 @@ const MainButton = ({
     motionProps,
     onClick,
     type = "button",
-    disabled = false// ✅ أضف هذا // ✅ أضف هذا
+    disabled = false
 }: MainButtonProps) => {
     if (href) {
         return (

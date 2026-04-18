@@ -1,4 +1,3 @@
-// app/auth/shared/AuthHeader.tsx
 "use client";
 import { motion, Variants } from "framer-motion";
 import Title from "@/components/custom/Title";
@@ -8,8 +7,7 @@ interface AuthHeaderProps {
     title?: string;
     subtitle: string;
     description?: string;
-    titleSize?: string; // ✅ تأكد من وجود هذا
-    subtitleSize?: string; // ✅ وهذا أيضاً
+
 }
 
 const fadeUp: Variants = {

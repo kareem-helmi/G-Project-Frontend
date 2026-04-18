@@ -1,7 +1,6 @@
-// app/(individual)/dashboard/components/VitalSignsPanel.tsx
 "use client";
 import { motion } from "framer-motion";
-import { VitalSign } from "../../lib/types";
+import { VitalSign } from "@/types/individual.types";
 import { TrendingUp, TrendingDown, Minus, Lightbulb, Info } from "lucide-react";
 
 interface VitalSignsPanelProps {

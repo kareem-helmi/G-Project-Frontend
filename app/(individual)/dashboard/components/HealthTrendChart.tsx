@@ -1,7 +1,6 @@
-// app/(individual)/dashboard/components/HealthTrendChart.tsx
 "use client";
 import { motion } from "framer-motion";
-import { HealthTrendPoint } from "../../lib/types";
+import { HealthTrendPoint } from "@/types/individual.types";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 interface HealthTrendChartProps {

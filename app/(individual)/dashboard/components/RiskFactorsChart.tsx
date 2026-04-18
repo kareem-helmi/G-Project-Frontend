@@ -1,7 +1,6 @@
-// app/(individual)/dashboard/components/RiskFactorsChart.tsx
 "use client";
 import { motion } from "framer-motion";
-import { RiskFactor } from "../../lib/types"
+import { RiskFactor } from "@/types/individual.types"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 interface RiskFactorsChartProps {

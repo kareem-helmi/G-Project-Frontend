@@ -1,3 +1,4 @@
+//individual layout
 "use client";
 
 import { motion } from "framer-motion";

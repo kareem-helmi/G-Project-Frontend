@@ -1,6 +1,6 @@
 "use client";
 import { motion } from "framer-motion";
-import { AnalysisItem } from "../../lib/types";
+import { AnalysisItem } from "@/types/individual.types";
 
 interface AnalysisSectionProps {
     title: string;

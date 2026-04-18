@@ -1,4 +1,3 @@
-// app/(business)/analytics/components/AnalyticsHeader.tsx
 "use client";
 
 import React from "react";

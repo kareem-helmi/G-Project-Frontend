@@ -1,4 +1,3 @@
-// app/auth/shared/AuthDivider.tsx
 "use client";
 import { motion, Variants } from "framer-motion";
 

@@ -1,7 +1,6 @@
-// app/(individual)/dashboard/components/CircularProgress.tsx
 "use client";
 import { motion } from "framer-motion";
-import { PredictionResult } from "../../lib/types";
+import { PredictionResult } from "@/types/individual.types";
 
 interface CircularProgressProps {
     prediction: PredictionResult;

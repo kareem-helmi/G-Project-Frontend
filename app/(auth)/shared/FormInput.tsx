@@ -1,4 +1,3 @@
-// app/auth/shared/FormInput.tsx
 "use client";
 import { motion, Variants } from "framer-motion";
 import { InputHTMLAttributes, forwardRef } from "react";

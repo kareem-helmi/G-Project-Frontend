@@ -1,6 +1,14 @@
 import type { Metadata, Viewport } from "next";
+import { Poppins } from "next/font/google";
 import "../styles/globals.css";
 import { ThemeProvider } from "@/context/ThemeContext";
+
+const poppins = Poppins({
+  subsets: ["latin"],
+  weight: ["400", "600"],
+  variable: "--font-poppins",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: 'AI Disease Progression Predictor',
@@ -57,13 +65,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head>
-        <link
-          href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"
-          rel="stylesheet"
-        />
-      </head>
-      <body className="antialiased bg-main-1 hoverEffect font-poppins">
+      <body className={`${poppins.variable} antialiased bg-main-1 hoverEffect font-poppins`}>
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>

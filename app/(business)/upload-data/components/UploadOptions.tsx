@@ -1,4 +1,3 @@
-// app/(business)/upload-data/components/UploadOptions.tsx
 "use client";
 
 import React from "react";

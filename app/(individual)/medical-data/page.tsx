@@ -1,282 +1,238 @@
 "use client";
+
+import { useState } from "react";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 import Title from "@/components/custom/Title";
 import SubTitle from "@/components/custom/SubTitle";
 import MainButton from "@/components/custom/MainButton";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import FormInput from "./components/FormInput";
+import FileUpload from "./components/FileUpload";
+import { submitHealthData } from "@/lib/services/individual.service";
+import { tempStorage } from "@/lib/utils/storage";
+import { validateHealthForm } from "@/lib/utils/validation";
+import { showSuccess, showError } from "@/components/ui/Toast";
 
-const MedicalDataForm = () => {
-    const [formData, setFormData] = useState({
+import type {
+    HealthFormData,
+    FormValidationErrors,
+} from "@/types/individual.types";
+
+// ==========================================
+// MAIN PAGE COMPONENT
+// ==========================================
+export default function MedicalDataPage() {
+    const router = useRouter();
+
+    const [formData, setFormData] = useState<HealthFormData>({
         age: "",
         bloodPressure: "",
         bloodSugar: "",
         bmi: "",
+        weight: "",
+        SleepHours: "",
         additionalInfo: "",
     });
 
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
-    const [errors, setErrors] = useState<Record<string, string>>({});
+    const [errors, setErrors] = useState<FormValidationErrors>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const router = useRouter();
 
-    const handleChange = (field: string, value: string) => {
-        setFormData(prev => ({ ...prev, [field]: value }));
-        // Clear error when user starts typing
+    // ------------------------
+    // Handlers
+    // ------------------------
+    const handleChange = (
+        field: keyof HealthFormData,
+        value: string
+    ) => {
+        setFormData((prev) => ({ ...prev, [field]: value }));
+
         if (errors[field]) {
-            setErrors(prev => {
-                const newErrors = { ...prev };
-                delete newErrors[field];
-                return newErrors;
+            setErrors((prev) => {
+                const updated = { ...prev };
+                delete updated[field];
+                return updated;
             });
         }
     };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            setSelectedFile(e.target.files[0]);
-        }
-    };
+    const handleSubmit = async () => {
+        const validationErrors = validateHealthForm(formData);
 
-    const validateForm = () => {
-        const newErrors: Record<string, string> = {};
-        
-        if (!formData.age || parseFloat(formData.age) <= 0 || parseFloat(formData.age) > 150) {
-            newErrors.age = "Please enter a valid age (1-150)";
-        }
-        
-        if (!formData.bloodPressure || !/^\d+\/\d+\s*(mmHg)?$/i.test(formData.bloodPressure.trim())) {
-            newErrors.bloodPressure = "Please enter blood pressure in format: 120/80 mmHg";
-        }
-        
-        if (!formData.bloodSugar || parseFloat(formData.bloodSugar) <= 0 || parseFloat(formData.bloodSugar) > 1000) {
-            newErrors.bloodSugar = "Please enter a valid blood sugar level (mg/dL)";
-        }
-        
-        if (!formData.bmi || parseFloat(formData.bmi) <= 0 || parseFloat(formData.bmi) > 100) {
-            newErrors.bmi = "Please enter a valid BMI (1-100)";
-        }
-        
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
-    };
-
-    const handlePredict = async () => {
-        if (!validateForm()) {
+        if (Object.keys(validationErrors).length > 0) {
+            setErrors(validationErrors);
             return;
         }
-        
+
         setIsSubmitting(true);
+
         try {
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 500));
-            router.push("/results");
+            const result = await submitHealthData({
+                ...formData,
+                file: selectedFile || undefined,
+            });
+
+            if (result.success) {
+                tempStorage.set("lastSubmissionId", result.id);
+                tempStorage.set("submittedHealthData", formData);
+
+                showSuccess("Health data submitted successfully!");
+                router.push("/results");
+            }
         } catch (error) {
-            console.error("Error submitting form:", error);
+            console.error("Submit error:", error);
+            showError("Failed to submit data. Please try again.");
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    const isFormValid = formData.age && formData.bloodPressure && formData.bloodSugar && formData.bmi && Object.keys(errors).length === 0;
+    const isFormValid =
+        formData.age &&
+        formData.bloodPressure &&
+        formData.bloodSugar &&
+        formData.bmi &&
+        Object.keys(errors).length === 0;
 
+    // ------------------------
+    // UI
+    // ------------------------
     return (
-        <div className="min-h-screen bg-cover bg-center py-4 sm:py-6 md:py-8 px-3 sm:px-4 md:px-6">
+        <div className="min-h-screen py-6 px-4">
             <div className="max-w-2xl mx-auto">
-                {/* Theme Toggle - إما تمسح السطر ده أو تستورد الكومبوننت */}
-                {/* <div className="flex justify-end mb-6">
-          <ThemeToggleDefault />
-        </div> */}
-
-                {/* Title Section */}
+                {/* Header */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="text-center mb-6 sm:mb-8"
+                    className="text-center mb-8"
                 >
-                    <Title className="text-xl sm:text-2xl md:text-3xl lg:text-4xl text-bluelight-1 mb-3 sm:mb-4 px-2">
+                    <Title className="text-3xl text-bluelight-1 mb-3">
                         AI Disease Progression Predictor
                     </Title>
-                    <SubTitle className="text-base sm:text-lg md:text-xl text-bluelight-1/70 px-2">
+                    <SubTitle className="text-lg text-bluelight-1/70">
                         Enter Patient Information
                     </SubTitle>
                 </motion.div>
 
-                {/* Form Section */}
+                {/* Form */}
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="space-y-6 sm:space-y-8"
+                    transition={{ delay: 0.15 }}
+                    className="space-y-10"
                 >
-                    {/* Required Information Section */}
-                    <div className="space-y-4 sm:space-y-6">
-                        <h3 className="text-lg sm:text-xl font-semibold text-bluelight-1 border-b border-bluelight-1/30 pb-2">
+                    {/* Basic Info */}
+                    <section className="space-y-6">
+                        <h3 className="text-xl font-semibold text-bluelight-1 border-b border-bluelight-1/30 pb-2">
                             Basic Information
                         </h3>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                            {/* Age */}
-                            <div>
-                                <label className="text-bluelight-1 text-sm sm:text-base md:text-lg mb-2 sm:mb-3 block font-medium">Age <span className="text-red-500">*</span></label>
-                                <input
-                                    type="number"
-                                    placeholder="Enter age"
-                                    value={formData.age}
-                                    onChange={(e) => handleChange("age", e.target.value)}
-                                    className={`w-full bg-transparent border-2 ${errors.age ? 'border-red-500 dark:border-red-400' : 'border-bluelight-1/40'} rounded-lg sm:rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 md:py-4 text-bluelight-1 focus:border-bluelight-2 outline-none transition-all duration-300 text-sm sm:text-base md:text-lg`}
-                                    aria-invalid={!!errors.age}
-                                    aria-describedby={errors.age ? "age-error" : undefined}
-                                />
-                                {errors.age && (
-                                    <p id="age-error" className="text-red-500 dark:text-red-400 text-sm mt-1" role="alert">
-                                        {errors.age}
-                                    </p>
-                                )}
-                            </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <FormInput
+                                label="Age"
+                                type="number"
+                                placeholder="enter your age"
+                                value={formData.age}
+                                onChange={(v) => handleChange("age", v)}
+                                error={errors.age}
+                                required
+                            />
+                            <FormInput
+                                label="weight"
+                                type="number"
+                                placeholder="enter weight in kg"
+                                step="1"
+                                value={formData.weight}
+                                onChange={(v) => handleChange("weight", v)}
+                                error={errors.weight}
+                                required
+                            />
+                            <FormInput
+                                label="SleepHours"
+                                type="number"
+                                placeholder="enter your Sleep Hours"
+                                step="1"
+                                value={formData.SleepHours}
+                                onChange={(v) => handleChange("SleepHours", v)}
+                                error={errors.bmi}
+                                required
+                            />
+                            <FormInput
+                                label="Blood Pressure"
+                                value={formData.bloodPressure}
+                                onChange={(v) =>
+                                    handleChange("bloodPressure", v)
+                                }
+                                placeholder="e.g. 120/80 mmHg"
+                                error={errors.bloodPressure}
+                                required
+                            />
 
-                            {/* Blood Pressure */}
-                            <div>
-                                <label className="text-bluelight-1 text-lg mb-3 block font-medium">Blood Pressure <span className="text-red-500">*</span></label>
-                                <input
-                                    type="text"
-                                    placeholder="e.g., 120/80 mmHg"
-                                    value={formData.bloodPressure}
-                                    onChange={(e) => handleChange("bloodPressure", e.target.value)}
-                                    className={`w-full bg-transparent border-2 ${errors.bloodPressure ? 'border-red-500 dark:border-red-400' : 'border-bluelight-1/40'} rounded-xl px-4 py-4 text-bluelight-1 focus:border-bluelight-2 outline-none transition-all duration-300 text-lg`}
-                                    aria-invalid={!!errors.bloodPressure}
-                                    aria-describedby={errors.bloodPressure ? "bloodPressure-error" : undefined}
-                                />
-                                {errors.bloodPressure && (
-                                    <p id="bloodPressure-error" className="text-red-500 dark:text-red-400 text-sm mt-1" role="alert">
-                                        {errors.bloodPressure}
-                                    </p>
-                                )}
-                            </div>
 
-                            {/* Blood Sugar */}
-                            <div>
-                                <label className="text-bluelight-1 text-lg mb-3 block font-medium">Blood Sugar <span className="text-red-500">*</span></label>
-                                <input
-                                    type="number"
-                                    placeholder="mg/dL"
-                                    value={formData.bloodSugar}
-                                    onChange={(e) => handleChange("bloodSugar", e.target.value)}
-                                    className={`w-full bg-transparent border-2 ${errors.bloodSugar ? 'border-red-500 dark:border-red-400' : 'border-bluelight-1/40'} rounded-xl px-4 py-4 text-bluelight-1 focus:border-bluelight-2 outline-none transition-all duration-300 text-lg`}
-                                    aria-invalid={!!errors.bloodSugar}
-                                    aria-describedby={errors.bloodSugar ? "bloodSugar-error" : undefined}
-                                />
-                                {errors.bloodSugar && (
-                                    <p id="bloodSugar-error" className="text-red-500 dark:text-red-400 text-sm mt-1" role="alert">
-                                        {errors.bloodSugar}
-                                    </p>
-                                )}
-                            </div>
+                            <FormInput
+                                label="Blood Sugar"
+                                type="number"
+                                value={formData.bloodSugar}
+                                onChange={(v) =>
+                                    handleChange("bloodSugar", v)
+                                }
+                                placeholder="mg/dL"
+                                error={errors.bloodSugar}
+                                required
+                            />
 
-                            {/* BMI */}
-                            <div>
-                                <label className="text-bluelight-1 text-lg mb-3 block font-medium">BMI <span className="text-red-500">*</span></label>
-                                <input
-                                    type="number"
-                                    step="0.1"
-                                    placeholder="Enter BMI"
-                                    value={formData.bmi}
-                                    onChange={(e) => handleChange("bmi", e.target.value)}
-                                    className={`w-full bg-transparent border-2 ${errors.bmi ? 'border-red-500 dark:border-red-400' : 'border-bluelight-1/40'} rounded-xl px-4 py-4 text-bluelight-1 focus:border-bluelight-2 outline-none transition-all duration-300 text-lg`}
-                                    aria-invalid={!!errors.bmi}
-                                    aria-describedby={errors.bmi ? "bmi-error" : undefined}
-                                />
-                                {errors.bmi && (
-                                    <p id="bmi-error" className="text-red-500 dark:text-red-400 text-sm mt-1" role="alert">
-                                        {errors.bmi}
-                                    </p>
-                                )}
-                            </div>
+                            <FormInput
+                                label="BMI"
+                                type="number"
+                                placeholder="enter your Body Mass Index"
+                                step="0.1"
+                                value={formData.bmi}
+                                onChange={(v) => handleChange("bmi", v)}
+                                error={errors.bmi}
+                                required
+                            />
+
                         </div>
-                    </div>
+                    </section>
 
-                    {/* Divider */}
-                    <div className="border-t border-bluelight-1/30 my-8"></div>
-
-                    {/* Optional Information Section */}
-                    <div className="space-y-6">
+                    {/* Additional Info */}
+                    <section className="space-y-6">
                         <h3 className="text-xl font-semibold text-bluelight-1 border-b border-bluelight-1/30 pb-2">
                             Additional Information (Optional)
                         </h3>
 
-                        {/* Additional Info Textarea */}
-                        <div>
-                            <label className="text-bluelight-1 text-lg mb-3 block font-medium">More Information</label>
-                            <textarea
-                                placeholder="Enter any additional health information, symptoms, or notes..."
-                                value={formData.additionalInfo}
-                                onChange={(e) => handleChange("additionalInfo", e.target.value)}
-                                rows={4}
-                                className="w-full bg-transparent border-2 border-bluelight-1/40 rounded-xl px-4 py-4 text-bluelight-1 focus:border-bluelight-2 outline-none transition-all duration-300 text-lg resize-none"
-                            />
-                        </div>
+                        <textarea
+                            rows={4}
+                            value={formData.additionalInfo}
+                            onChange={(e) =>
+                                handleChange("additionalInfo", e.target.value)
+                            }
+                            placeholder="Enter any additional health details..."
+                            className="w-full bg-transparent border-2 border-bluelight-1/40 rounded-xl px-4 py-4 text-bluelight-1 focus:border-bluelight-2 outline-none transition resize-none"
+                        />
 
-                        {/* File Upload */}
-                        <div>
-                            <label className="text-bluelight-1 text-sm sm:text-base md:text-lg mb-2 sm:mb-3 block font-medium">Upload File (Optional)</label>
-                            <div className="border-2 border-bluelight-1/40 border-dashed rounded-lg sm:rounded-xl p-4 sm:p-6 text-center hover:border-bluelight-2 transition-all duration-300">
-                                <input
-                                    type="file"
-                                    onChange={handleFileChange}
-                                    className="hidden"
-                                    id="file-upload"
-                                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx"
-                                />
-                                <label htmlFor="file-upload" className="cursor-pointer">
-                                    <div className="text-bluelight-2 hover:text-bluelight-1 transition-all duration-300 text-lg">
-                                        {selectedFile ? (
-                                            <div className="flex items-center justify-center gap-2">
-                                                <span className="text-2xl">📄</span>
-                                                <span>{selectedFile.name}</span>
-                                            </div>
-                                        ) : (
-                                            <div className="flex items-center justify-center gap-2">
-                                                <span className="text-2xl">📁</span>
-                                                <span>Click to upload medical file</span>
-                                            </div>
-                                        )}
-                                    </div>
-                                    <p className="text-bluelight-1/60 text-sm mt-2">
-                                        Supported formats: PDF, JPG, PNG, DOC (Max 10MB)
-                                    </p>
-                                </label>
-                            </div>
-                        </div>
-                    </div>
+                        <FileUpload
+                            selectedFile={selectedFile}
+                            onFileChange={setSelectedFile}
+                        />
+                    </section>
 
-                    {/* Predict Button */}
-                    <div className="pt-6 sm:pt-8">
+                    {/* Submit */}
+                    <motion.div
+                        className="flex justify-center"
+                    >
                         <MainButton
-                            onClick={handlePredict}
+                            onClick={handleSubmit}
                             disabled={!isFormValid || isSubmitting}
-                            className={`w-full text-sm sm:text-base md:text-lg px-6 sm:px-8 md:px-12 py-3 sm:py-4 md:py-5 border transition-all duration-300 ${isFormValid && !isSubmitting
-                                ? "bg-bluelight-2 hover:bg-transparent"
-                                : "bg-bluelight-2/50 cursor-not-allowed opacity-60"
-                                }`}
-                            background={isFormValid && !isSubmitting ? "bg-bluelight-2 w-full h-full bottom-0 group-hover:bottom-full" : ""}
+                            className="w-full max-w-md text-xl px-10 py-4 border relative overflow-hidden"
+                            background="bg-bluelight-2 w-full h-full bottom-0 group-hover:bottom-full"
                         >
-                            {isSubmitting ? (
-                                <span className="flex items-center justify-center gap-2">
-                                    <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                                    </svg>
-                                    Processing...
-                                </span>
-                            ) : (
-                                "Predict"
-                            )}
+                            {isSubmitting ? "Processing..." : "Predict"}
                         </MainButton>
-                    </div>
+                    </motion.div>
+
                 </motion.div>
             </div>
         </div>
     );
-};
-
-export default MedicalDataForm;
+}

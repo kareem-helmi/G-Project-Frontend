@@ -1,20 +1,28 @@
-// app/auth/reset-password/components/PasswordStrength.tsx
 "use client";
+import { VALIDATION_RULES } from "@/lib/constants";
 
 interface PasswordStrengthProps {
     password: string;
 }
 
+interface StrengthResult {
+    strength: number;
+    color: string;
+    label: string;
+}
+
 export function PasswordStrength({ password }: PasswordStrengthProps) {
-    const getPasswordStrength = (password: string) => {
-        if (!password) return { strength: 0, color: "bg-gray-300", label: "" };
+    function getPasswordStrength(password: string): StrengthResult {
+        if (!password) {
+            return { strength: 0, color: "bg-gray-300", label: "" };
+        }
 
         const requirements = [
-            password.length >= 8,
-            /[A-Z]/.test(password),
-            /[a-z]/.test(password),
-            /[0-9]/.test(password),
-            /[!@#$%^&*(),.?":{}|<>]/.test(password)
+            password.length >= VALIDATION_RULES.PASSWORD.MIN_LENGTH,
+            VALIDATION_RULES.PASSWORD.REGEX.UPPERCASE.test(password),
+            VALIDATION_RULES.PASSWORD.REGEX.LOWERCASE.test(password),
+            VALIDATION_RULES.PASSWORD.REGEX.NUMBER.test(password),
+            VALIDATION_RULES.PASSWORD.REGEX.SPECIAL.test(password)
         ];
 
         const metRequirements = requirements.filter(Boolean).length;
@@ -23,7 +31,7 @@ export function PasswordStrength({ password }: PasswordStrengthProps) {
         if (strength <= 40) return { strength, color: "bg-red-500", label: "Weak" };
         if (strength <= 70) return { strength, color: "bg-yellow-500", label: "Medium" };
         return { strength, color: "bg-green-500", label: "Strong" };
-    };
+    }
 
     const { strength, color, label } = getPasswordStrength(password);
 
@@ -37,9 +45,9 @@ export function PasswordStrength({ password }: PasswordStrengthProps) {
                     style={{ width: `${strength}%` }}
                 />
             </div>
-            <div className="text-xs text-bluelight-1/60 mt-1 text-left">
-                Password strength: {label}
-            </div>
+            <p className="text-xs text-bluelight-1/60 mt-1 text-left">
+                Password strength: <span className="font-medium">{label}</span>
+            </p>
         </div>
     );
 }

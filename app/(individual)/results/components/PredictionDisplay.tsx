@@ -1,6 +1,6 @@
 "use client";
 import { motion } from "framer-motion";
-import { PredictionResult, RiskLevel } from "../../lib/types";
+import { PredictionResult, RiskLevel } from "@/types/individual.types";
 import PredictionCircle from "./PredictionCircle";
 
 interface PredictionDisplayProps {
@@ -9,7 +9,6 @@ interface PredictionDisplayProps {
 }
 
 export default function PredictionDisplay({ prediction, title = "Predict Result" }: PredictionDisplayProps) {
-    // تأكد من إرجاع قيمة دائماً
     const getRiskColors = (riskLevel: RiskLevel) => {
         switch (riskLevel) {
             case 'High': return {
@@ -27,7 +26,7 @@ export default function PredictionDisplay({ prediction, title = "Predict Result"
                 text: 'text-green-500',
                 bg: 'bg-green-500/10'
             };
-            default: return { // ⬅️ أضف حالة افتراضية
+            default: return {
                 border: 'border-gray-500/30',
                 text: 'text-gray-500',
                 bg: 'bg-gray-500/10'

@@ -1,5 +1,5 @@
 "use client";
-import { VitalSign } from "../../lib/types";
+import { VitalSign } from "@/types/individual.types";
 import VitalSignCard from "./VitalSignsCard";
 
 interface VitalSignsGridProps {

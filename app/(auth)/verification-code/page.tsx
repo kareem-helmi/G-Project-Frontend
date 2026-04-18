@@ -1,142 +1,125 @@
-// app/auth/verification-code/page.tsx
 "use client";
+
+import { Suspense } from "react";
 import { motion } from "framer-motion";
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import AuthContainer from "../shared/AuthContainer";
 import { AuthHeader } from "../shared/AuthHeader";
 import { VerificationInputs } from "./components/VerificationInputs";
 import { ResendCode } from "./components/ResendCode";
+import MainButton from "@/components/custom/MainButton";
+import { containerVariants } from "../shared/motion-variants";
 
-const fadeUp = {
-  hidden: { y: 30, opacity: 0 },
-  visible: {
-    y: 0,
-    opacity: 1,
-    transition: { duration: 0.5, ease: "easeOut" as const }
-  },
+const FADE_UP = {
+  hidden: { y: 20, opacity: 0 },
+  visible: { y: 0, opacity: 1, transition: { duration: 0.4 } }
 };
 
-export default function VerificationCodePage() {
-  const [code, setCode] = useState(["", "", "", "", "", ""]);
-  const [userEmail, setUserEmail] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+function Fallback() {
+  return (
+    <div className="flex flex-col gap-4 w-full max-w-[380px]">
+      <div className="h-12 bg-bluelight-1/10 rounded-xl animate-pulse" />
+    </div>
+  );
+}
+
+function VerificationContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
+  const [code, setCode] = useState(["", "", "", "", "", ""]);
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  // ✅ FIX: Get email from URL params
   useEffect(() => {
-    const savedEmail = sessionStorage.getItem('resetPasswordEmail');
-    if (savedEmail) {
-      setUserEmail(savedEmail);
+    const emailParam = searchParams.get("email");
+    if (emailParam) {
+      setEmail(decodeURIComponent(emailParam));
     } else {
-      router.push('/auth/forgot-password');
+      // No email in URL, redirect back
+      router.push("/forgot-password");
     }
-  }, [router]);
+  }, [router, searchParams]);
 
-  const handleChange = (index: number, value: string) => {
-    if (value.length <= 1 && /^\d*$/.test(value)) {
-      const newCode = [...code];
-      newCode[index] = value;
-      setCode(newCode);
+  const isCodeComplete = code.every((digit) => digit !== "");
 
-      if (value && index < 5) {
-        const nextInput = document.getElementById(`code-${index + 1}`);
-        if (nextInput) nextInput.focus();
-      }
-    }
-  };
+  async function handleVerify() {
+    if (!isCodeComplete || loading) return;
 
-  const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === "Backspace" && !code[index] && index > 0) {
-      const prevInput = document.getElementById(`code-${index - 1}`);
-      if (prevInput) prevInput.focus();
-    }
-  };
-
-  const handleVerifyClick = async () => {
-    if (!isCodeComplete || isLoading) return;
-
-    setIsLoading(true);
+    setLoading(true);
     try {
-      const verificationCode = code.join('');
+      const verificationCode = code.join("");
       console.log("Verifying code:", verificationCode);
 
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // TODO: Replace with actual API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      router.push('../reset-password');
+      router.push("/reset-password");
     } catch (error) {
       console.error("Verification failed:", error);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
-  };
-
-  const isCodeComplete = code.every(digit => digit !== "");
+  }
 
   return (
-    <AuthContainer minHeight="550px">
-      <AuthHeader subtitle="Verification Code" />
-
-      <motion.div
-        variants={fadeUp}
-        className="text-bluelight-1/80 text-sm sm:text-base text-center max-w-[400px]"
-      >
-        We sent a 6-digit verification code to your email
+    <motion.div
+      initial="hidden"
+      animate="visible"
+      className="flex flex-col gap-5 w-full max-w-[380px] mt-4"
+    >
+      <motion.div variants={FADE_UP} className="text-bluelight-1/80 text-sm text-center">
+        We sent a 6-digit verification code to
         <br />
         <span className="text-bluelight-2 font-semibold break-all">
-          {userEmail || "Loading..."}
+          {email || "Loading..."}
         </span>
       </motion.div>
 
-      <VerificationInputs
-        code={code}
-        onChange={handleChange}
-        onKeyDown={handleKeyDown}
-      />
+      <VerificationInputs code={code} setCode={setCode} />
 
-      <motion.div className="flex flex-col gap-5 sm:gap-6 w-full max-w-[380px]">
-        <motion.div variants={fadeUp}>
-          {/* ✅ زر Verify مع نفس تأثيرات الأزرار الأخرى */}
-          <button
-            type="button"
-            onClick={handleVerifyClick}
-            disabled={!isCodeComplete || isLoading}
-            className="w-full text-[1rem] sm:text-[1.1rem] 
-                       px-7 py-3.5 border-2 border-bluelight-2
-                       bg-gradient-to-r from-bluelight-2 to-bluelight-1
-                       hover:from-bluelight-1 hover:to-bluelight-2
-                       text-white font-medium
-                       rounded-xl transition-all duration-300
-                       hover:scale-[1.02] active:scale-[0.98]
-                       shadow-lg hover:shadow-xl
-                       relative overflow-hidden group
-                       disabled:opacity-50 disabled:cursor-not-allowed
-                       disabled:hover:scale-100"
-          >
-            <div className="absolute bg-gradient-to-r from-bluelight-2 to-bluelight-1 
-                            w-full h-full bottom-0 group-hover:bottom-full 
-                            transition-all duration-300" />
-
-            <span className="relative z-10 flex items-center justify-center gap-2">
-              {isLoading && (
-                <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                </svg>
-              )}
-              {isLoading ? 'Verifying...' : 'Verify Code'}
-            </span>
-          </button>
-        </motion.div>
-
-        <ResendCode />
-
-        <motion.div variants={fadeUp} className="text-sm text-center text-bluelight-1/70">
-          <a href="./login" className="text-bluelight-2 hover:underline transition-all duration-300">
-            Back to Login
-          </a>
-        </motion.div>
+      <motion.div variants={FADE_UP}>
+        <MainButton
+          onClick={handleVerify}
+          disabled={!isCodeComplete || loading}
+          className="w-full text-[1rem] px-7 py-3.5 border"
+          background="bg-bluelight-2 w-full h-full bottom-0 group-hover:bottom-full"
+        >
+          {loading ? "Verifying..." : "Verify Code"}
+        </MainButton>
       </motion.div>
+
+      <ResendCode />
+
+      <motion.div variants={FADE_UP} className="text-sm text-center text-bluelight-1/70">
+        <a href="/login" className="text-bluelight-2 hover:underline font-medium">
+          Back to Login
+        </a>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+export default function VerificationCodePage() {
+  return (
+    <AuthContainer minHeight="550px">
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="w-full relative z-0"
+      >
+        <AuthHeader
+          title="AI Disease Progression Predictor"
+          subtitle="Verification Code"
+        />
+      </motion.div>
+
+      <Suspense fallback={<Fallback />}>
+        <VerificationContent />
+      </Suspense>
     </AuthContainer>
   );
 }

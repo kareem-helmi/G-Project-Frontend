@@ -1,4 +1,3 @@
-// app/(business)/ai-explanations/components/FileAttachment.tsx
 "use client";
 
 import React from "react";

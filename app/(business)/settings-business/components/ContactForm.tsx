@@ -1,5 +1,4 @@
 "use client";
-
 import React, { useState } from "react";
 import { Send, X, Mail, User, MessageCircle } from "lucide-react";
 
@@ -100,8 +99,8 @@ export default function ContactForm({
                     onClick={clear}
                     disabled={!name && !email && !message}
                     className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg transition-all flex-1 ${name || email || message
-                            ? 'border border-bluelight-1/40 text-bluelight-1 hover:bg-bluelight-1/10'
-                            : 'border border-bluelight-1/20 text-bluelight-1/40 cursor-not-allowed'
+                        ? 'border border-bluelight-1/40 text-bluelight-1 hover:bg-bluelight-1/10'
+                        : 'border border-bluelight-1/20 text-bluelight-1/40 cursor-not-allowed'
                         }`}
                 >
                     <X size={16} />
@@ -112,8 +111,8 @@ export default function ContactForm({
                     onClick={submit}
                     disabled={!isFormValid || sending}
                     className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg transition-all font-medium flex-1 ${isFormValid && !sending
-                            ? "bg-bluelight-2 text-white hover:bg-bluelight-1 active:scale-95"
-                            : "bg-bluelight-2/50 text-white/70 cursor-not-allowed"
+                        ? "bg-bluelight-2 text-white hover:bg-bluelight-1 active:scale-95"
+                        : "bg-bluelight-2/50 text-white/70 cursor-not-allowed"
                         }`}
                 >
                     {sending ? (

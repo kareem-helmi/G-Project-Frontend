@@ -1,12 +1,15 @@
-// app/(individual)/lib/types.ts
 
-// ============ أنواع أساسية ============
+// ==========================================
+// BASE TYPES
+// ==========================================
 export type RiskLevel = 'High' | 'Medium' | 'Low';
 export type HealthStatus = 'normal' | 'high' | 'low';
 export type ActivityStatus = 'completed' | 'upcoming' | 'missed';
 export type TrendDirection = 'up' | 'down' | 'stable';
 
-// ============ أنواع المريض ============
+// ==========================================
+// PATIENT TYPES
+// ==========================================
 export interface Patient {
     id: string;
     name: string;
@@ -21,7 +24,17 @@ export interface Patient {
     phone?: string;
 }
 
-// ============ أنواع العلامات الحيوية ============
+export interface UserProfile {
+    id: string;
+    name: string;
+    email: string;
+    phone: string;
+    birthDate: string;
+}
+
+// ==========================================
+// VITAL SIGNS TYPES
+// ==========================================
 export interface VitalSign {
     id: string;
     name: string;
@@ -32,7 +45,9 @@ export interface VitalSign {
     trend?: TrendDirection;
 }
 
-// ============ أنواع التنبؤ ============
+// ==========================================
+// PREDICTION TYPES
+// ==========================================
 export interface PredictionResult {
     percentage: number;
     riskLevel: RiskLevel;
@@ -42,24 +57,18 @@ export interface PredictionResult {
     timeframe?: string;
 }
 
-// ============ أنواع التحليل والتوصيات ============
+// ==========================================
+// ANALYSIS TYPES
+// ==========================================
 export interface AnalysisItem {
     text: string;
     color: 'red' | 'green' | 'yellow' | 'blue';
     icon?: string;
 }
 
-// ============ أنواع صفحة النتائج ============
-export interface ResultsPageData {
-    patient: Patient;
-    vitals: VitalSign[];
-    prediction: PredictionResult;
-    analysis: AnalysisItem[];
-    recommendations: AnalysisItem[];
-    lastUpdated: string;
-}
-
-// ============ أنواع الاتجاه الصحي ============
+// ==========================================
+// HEALTH TREND TYPES
+// ==========================================
 export interface HealthTrendPoint {
     id: string;
     month: string;
@@ -68,7 +77,9 @@ export interface HealthTrendPoint {
     visits: number;
 }
 
-// ============ أنواع عوامل المخاطر ============
+// ==========================================
+// RISK FACTOR TYPES
+// ==========================================
 export interface RiskFactor {
     id: string;
     name: string;
@@ -77,7 +88,9 @@ export interface RiskFactor {
     description: string;
 }
 
-// ============ أنواع الأنشطة ============
+// ==========================================
+// ACTIVITY TYPES
+// ==========================================
 export interface ActivityItem {
     id: string;
     type: 'measurement' | 'appointment' | 'medication' | 'analysis';
@@ -87,7 +100,43 @@ export interface ActivityItem {
     status: ActivityStatus;
 }
 
-// ============ أنواع صفحة الداشبورد ============
+// ==========================================
+// FORM TYPES
+// ==========================================
+export interface HealthFormData {
+    age: string;
+    bloodPressure: string;
+    bloodSugar: string;
+    bmi: string;
+    weight: string;
+    SleepHours: string;
+    additionalInfo: string;
+    file?: File;
+}
+
+export interface FormValidationErrors {
+    age?: string;
+    bloodPressure?: string;
+    bloodSugar?: string;
+    bmi?: string;
+    [key: string]: string | undefined;
+}
+
+// ==========================================
+// SETTINGS TYPES
+// ==========================================
+export interface UserSettings {
+    notifications: boolean;
+    emailUpdates: boolean;
+    darkMode: boolean;
+    language: string;
+    timezone: string;
+    dataSharing: boolean;
+}
+
+// ==========================================
+// PAGE DATA TYPES
+// ==========================================
 export interface DashboardData {
     patient: Patient;
     vitals: VitalSign[];
@@ -98,7 +147,18 @@ export interface DashboardData {
     lastUpdated: string;
 }
 
-// ============ أنواع إعدادات الرسم البياني ============
+export interface ResultsPageData {
+    patient: Patient;
+    vitals: VitalSign[];
+    prediction: PredictionResult;
+    analysis: AnalysisItem[];
+    recommendations: AnalysisItem[];
+    lastUpdated: string;
+}
+
+// ==========================================
+// CHART CONFIG TYPES
+// ==========================================
 export interface ChartConfig {
     cartesianGrid: {
         strokeDasharray: string;
@@ -121,8 +181,11 @@ export interface ChartConfig {
     };
 }
 
-// ============ ثوابت الألوان ============
+// ==========================================
+// CONSTANTS
+// ==========================================
 export const CHART_COLORS = ['#0EB2B1', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6', '#10B981'];
+
 export const RISK_COLORS = {
     High: { bg: 'bg-red-500/10', text: 'text-red-500', border: 'border-red-500/30' },
     Medium: { bg: 'bg-yellow-500/10', text: 'text-yellow-500', border: 'border-yellow-500/30' },

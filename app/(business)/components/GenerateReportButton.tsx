@@ -1,4 +1,3 @@
-// app/(business)/components/GenerateReportButton.tsx
 "use client";
 
 import React from "react";
@@ -24,7 +23,7 @@ export default function GenerateReportButton({
             className={`
                 px-8 py-4 bg-bluelight-2 text-white rounded-xl 
                 hover:bg-bluelight-1 transition-all duration-300 
-                text-lg font-medium shadow-lg hover:shadow-xl 
+                text-lg font-medium shadow-lg hover:shadow-xl hover:scale-105
                 flex items-center justify-center gap-3 min-w-[220px]
                 ${loading || disabled ? 'opacity-70 cursor-not-allowed' : 'active:scale-95'}
             `}

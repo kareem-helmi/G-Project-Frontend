@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { motion, Variants } from "framer-motion";
-import { Save, Trash2, Settings as SettingsIcon, Bell, MessageSquare, Activity } from "lucide-react";
-
+import { motion } from "framer-motion";
+import { Save, Trash2, Activity, MessageSquare } from "lucide-react";
+import { tempStorage } from "@/lib/utils/storage";
 import Notifications from "./components/Notifications";
 import ContactForm from "./components/ContactForm";
 
@@ -13,96 +13,127 @@ type NotificationsState = {
     highRiskAlerts: boolean;
 };
 
-const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
-const fadeUp: Variants = {
-    hidden: { y: 12, opacity: 0 },
-    visible: { y: 0, opacity: 1, transition: { duration: 0.45, ease: EASE } },
+const DEFAULT_SETTINGS: NotificationsState = {
+    email: true,
+    sms: false,
+    highRiskAlerts: true,
 };
 
-export default function SettingsPage() {
-    const [notifications, setNotifications] = useState<NotificationsState>({
-        email: true,
-        sms: false,
-        highRiskAlerts: true,
-    });
+const STORAGE_KEY = 'business_notifications';
 
+export default function SettingsPage() {
+    // ==========================================
+    // STATE
+    // ==========================================
+    const [notifications, setNotifications] = useState<NotificationsState>(DEFAULT_SETTINGS);
     const [dirty, setDirty] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [loading, setLoading] = useState(true);
 
-    // Load settings from localStorage on mount
+    // ==========================================
+    // LOAD SETTINGS
+    // ==========================================
     useEffect(() => {
-        if (typeof window === 'undefined') return;
-        const saved = localStorage.getItem('business_notifications');
-        if (saved) {
-            try {
-                const parsed = JSON.parse(saved);
-                setNotifications(parsed);
-            } catch (e) {
-                console.error('Error loading settings:', e);
+        try {
+            const saved = tempStorage.get<NotificationsState>(STORAGE_KEY);
+            if (saved) {
+                setNotifications(saved);
             }
+        } catch (error) {
+            console.error('Error loading settings:', error);
+        } finally {
+            setLoading(false);
         }
     }, []);
 
+    // ==========================================
+    // TOGGLE NOTIFICATION
+    // ==========================================
     const toggleNotification = (key: keyof NotificationsState) => {
         setNotifications((prev) => ({ ...prev, [key]: !prev[key] }));
         setDirty(true);
     };
 
+    // ==========================================
+    // RESET SETTINGS
+    // ==========================================
     const reset = () => {
         if (confirm('Are you sure you want to reset all settings to default values?')) {
-            setNotifications({ email: true, sms: false, highRiskAlerts: true });
+            setNotifications(DEFAULT_SETTINGS);
             setDirty(true);
-            if (typeof window !== 'undefined') {
-                localStorage.removeItem('business_notifications');
-            }
+            tempStorage.remove(STORAGE_KEY);
         }
     };
 
+    // ==========================================
+    // SAVE SETTINGS
+    // ==========================================
     const save = async () => {
         if (!dirty) return;
 
         setSaving(true);
         try {
-            // Save to localStorage
-            if (typeof window !== 'undefined') {
-                localStorage.setItem('business_notifications', JSON.stringify(notifications));
-            }
-            await new Promise((r) => setTimeout(r, 800));
+            // Save to temp storage
+            tempStorage.set(STORAGE_KEY, notifications);
+
+            // TODO: Replace with actual API call when backend is ready
+            // await updateSettings({ notifications });
+
+            // Simulate API delay
+            await new Promise((resolve) => setTimeout(resolve, 800));
+
             setDirty(false);
-            
+
             // Show success message
-            const successMsg = document.createElement('div');
-            successMsg.className = 'fixed top-20 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50';
-            successMsg.textContent = 'Settings saved successfully!';
-            document.body.appendChild(successMsg);
-            setTimeout(() => {
-                successMsg.remove();
-            }, 3000);
-        } catch (err) {
-            console.error(err);
-            alert("Failed to save settings");
+            showSuccessMessage('Settings saved successfully!');
+        } catch (error) {
+            console.error('Failed to save settings:', error);
+            alert("Failed to save settings. Please try again.");
         } finally {
             setSaving(false);
         }
     };
 
-    const handleSendMessage = async (payload: { name: string; email: string; message: string }) => {
-        const subj = encodeURIComponent("Dashboard Feedback / Support");
-        const body = encodeURIComponent(`Name: ${payload.name}\nEmail: ${payload.email}\n\n${payload.message}`);
-        window.location.href = `mailto:devs@yourcompany.com?subject=${subj}&body=${body}`;
+    // ==========================================
+    // CONTACT FORM HANDLER
+    // ==========================================
+    const handleSendMessage = (payload: {
+        name: string;
+        email: string;
+        message: string
+    }) => {
+        const subject = encodeURIComponent("Dashboard Feedback / Support");
+        const body = encodeURIComponent(
+            `Name: ${payload.name || 'Anonymous'}\nEmail: ${payload.email || 'Not provided'}\n\n${payload.message}`
+        );
+        window.location.href = `mailto:support@yourcompany.com?subject=${subject}&body=${body}`;
     };
 
+    // ==========================================
+    // LOADING STATE
+    // ==========================================
+    if (loading) {
+        return (
+            <div className="w-full space-y-6">
+                <PageHeader />
+                <div className="flex items-center justify-center py-12">
+                    <div className="text-center">
+                        <div className="w-12 h-12 border-4 border-bluelight-1 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                        <p className="text-bluelight-1/70">Loading settings...</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // ==========================================
+    // RENDER SETTINGS
+    // ==========================================
     return (
         <div className="w-full space-y-8">
-            {/* Header */}
-            <div>
-                <h1 className="text-3xl font-bold text-bluelight-1 mb-2">Settings</h1>
-                <p className="text-bluelight-1/60">
-                    Manage notifications and contact the development team
-                </p>
-            </div>
+            <PageHeader />
 
-            {/* Content Grid - Stacked Vertically */}
+            {/* Settings Content */}
             <div className="space-y-6">
                 {/* Notifications Card */}
                 <div className="bg-transparent border-2 border-bluelight-1/40 rounded-2xl p-6">
@@ -131,26 +162,34 @@ export default function SettingsPage() {
             </div>
 
             {/* Actions Bar */}
-            <div className="flex items-center justify-between gap-4 pt-6 border-t border-bluelight-1/30">
+            <div className="flex items-center justify-between gap-4 pt-6 border-t-2 border-bluelight-1/30">
                 <button
                     onClick={reset}
                     disabled={!dirty}
-                    className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-lg transition-all ${dirty
+                    className={`
+                        inline-flex items-center gap-2 px-4 py-2.5 rounded-lg 
+                        transition-all font-medium
+                        ${dirty
                             ? 'border-2 border-bluelight-1/40 text-bluelight-1 hover:bg-bluelight-1/10 active:scale-95'
                             : 'border-2 border-bluelight-1/20 text-bluelight-1/40 cursor-not-allowed'
-                        }`}
+                        }
+                    `}
                 >
                     <Trash2 size={16} />
-                    Reset
+                    Reset to Default
                 </button>
 
                 <button
                     onClick={save}
                     disabled={!dirty || saving}
-                    className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-lg transition-all font-medium ${dirty && !saving
+                    className={`
+                        inline-flex items-center gap-2 px-6 py-2.5 rounded-lg 
+                        transition-all font-medium
+                        ${dirty && !saving
                             ? "bg-bluelight-2 text-white hover:bg-bluelight-1 active:scale-95"
                             : "bg-bluelight-2/50 text-white/70 cursor-not-allowed"
-                        }`}
+                        }
+                    `}
                 >
                     {saving ? (
                         <>
@@ -167,4 +206,35 @@ export default function SettingsPage() {
             </div>
         </div>
     );
+}
+
+// ==========================================
+// PAGE HEADER COMPONENT
+// ==========================================
+function PageHeader() {
+    return (
+        <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+        >
+            <h1 className="text-3xl font-bold text-bluelight-1 mb-2">
+                Settings
+            </h1>
+            <p className="text-bluelight-1/70">
+                Manage notifications and contact the development team
+            </p>
+        </motion.div>
+    );
+}
+
+// ==========================================
+// HELPER FUNCTION
+// ==========================================
+function showSuccessMessage(message: string) {
+    const successMsg = document.createElement('div');
+    successMsg.className = 'fixed top-20 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-in slide-in-from-right';
+    successMsg.textContent = message;
+    document.body.appendChild(successMsg);
+    setTimeout(() => successMsg.remove(), 3000);
 }

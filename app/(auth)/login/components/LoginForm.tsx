@@ -1,198 +1,160 @@
-// app/(auth)/login/components/LoginForm.tsx
 "use client";
+
 import { motion } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, FormEvent, ChangeEvent, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { FormInput } from "../../shared/FormInput";
 import { AuthDivider } from "../../shared/AuthDivider";
 import { fadeUp } from "../../shared/motion-variants";
-import { useUserType, type UserType } from "@/context/UserTypeContext";
+import { validateEmail } from "@/lib/utils/validation";
+import { authService } from "@/lib/api/auth.service";
+import { AUTH_ROUTES } from "@/lib/constants";
+import type { UserType } from "@/types/auth.types";
+
+// 1. مكون فرعي لمعالجة الروابط بدون تعطيل الفورم الأساسية
+function QueryTypeHandler({ setUserType }: { setUserType: (type: UserType) => void }) {
+    const searchParams = useSearchParams();
+    
+    useEffect(() => {
+        const typeFromUrl = searchParams.get("userType");
+        if (typeFromUrl === "business" || typeFromUrl === "individual") {
+            setUserType(typeFromUrl);
+        }
+    }, [searchParams, setUserType]);
+
+    return null; // مكون خفي مش بيظهر حاجة
+}
 
 export function LoginForm() {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState("");
-
     const router = useRouter();
-    const searchParams = useSearchParams();
-    const { login } = useUserType();
+    // 2. حذفنا useSearchParams من هنا
 
-    // استخراج userType من query parameters
-    const userTypeFromQuery = searchParams.get('userType') as UserType | null;
+    const [email, setEmail] = useState<string>("");
+    const [password, setPassword] = useState<string>("");
+    const [userType, setUserType] = useState<UserType>("individual");
+    const [error, setError] = useState<string>("");
+    const [loading, setLoading] = useState<boolean>(false);
 
-    useEffect(() => {
-        // إذا كان هناك userType في الـ query، نستخدمه
-        if (userTypeFromQuery) {
-            console.log("User type from query:", userTypeFromQuery);
-        }
-    }, [userTypeFromQuery]);
-
-    const handleSubmit = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
         e.preventDefault();
-        if (!email || !password) {
-            setError("Please fill in all fields");
+        setError("");
+
+        const emailValidation = validateEmail(email);
+        if (!emailValidation.isValid) {
+            setError(emailValidation.error || "Invalid email");
             return;
         }
 
-        setIsLoading(true);
-        setError("");
+        if (!password.trim()) {
+            setError("Password is required");
+            return;
+        }
+
+        setLoading(true);
 
         try {
-            // تحديد نوع المستخدم:
-            // 1. إذا جاء من query parameter نستخدمه
-            // 2. إذا لم يأتي نحدده من البريد الإلكتروني
-            let userType: UserType = 'individual';
-
-            if (userTypeFromQuery) {
-                userType = userTypeFromQuery;
-            } else if (email.includes('@hospital.') || email.includes('@clinic.') || email.includes('@medical.')) {
-                userType = 'business';
+            const response = await authService.login(email.trim(), password, userType);
+            if (typeof window !== "undefined") {
+                localStorage.setItem("auth_token", response.token);
+                localStorage.setItem("user", JSON.stringify(response.user));
             }
-
-            // استخدام الـ context للـ login
-            await login(userType, { email, password });
-
-            // توجيه بناءً على نوع المستخدم
-            if (userType === 'business') {
-                router.push('/dashboard-business');
-            } else {
-                router.push('/medical-data');
-            }
-
-        } catch (error) {
-            console.error("Login failed:", error);
-            setError("Invalid email or password");
+            router.push(userType === "business" ? AUTH_ROUTES.DASHBOARD_BUSINESS : AUTH_ROUTES.MEDICAL_DATA);
+        } catch (err) {
+            console.error("Login error:", err);
+            setError("Invalid credentials. Please try again.");
         } finally {
-            setIsLoading(false);
+            setLoading(false);
         }
     };
 
-    const handleRegisterClick = () => {
-        // عند الضغط على Register، توجيه مباشر إلى register-business
-        router.push('/register-business');
+    const handleEmailChange = (e: ChangeEvent<HTMLInputElement>): void => {
+        setEmail(e.target.value);
+        setError("");
+    };
+
+    const handlePasswordChange = (e: ChangeEvent<HTMLInputElement>): void => {
+        setPassword(e.target.value);
+        setError("");
     };
 
     return (
-        <motion.form
-            onSubmit={handleSubmit}
-            className="flex flex-col gap-5 sm:gap-6 w-full max-w-[380px] mt-2"
-        >
-            {/* Error Message */}
+        <motion.form onSubmit={handleSubmit} className="flex flex-col gap-5 sm:gap-6 w-full max-w-[380px] mt-2">
+            
+            {/* 3. هنا وضعنا المكون اللي فيه useSearchParams داخل Suspense 
+                بكده الـ Build هينجح، والفورم مش هتختفي لأنها برا الـ Suspense */}
+            <Suspense fallback={null}>
+                <QueryTypeHandler setUserType={setUserType} />
+            </Suspense>
+
             {error && (
                 <motion.div
-                    initial={{ opacity: 0, y: -10 }}
+                    initial={{ opacity: 0, y: -8 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 rounded-lg text-sm"
+                    className="p-3 rounded-lg text-sm bg-red-50 border border-red-200 text-red-600"
                     role="alert"
-                    aria-live="polite"
                 >
                     {error}
                 </motion.div>
             )}
 
-            {/* لا يوجد اختيار لنوع المستخدم هنا - صفحة login عادية */}
-
-            {/* Email Input */}
             <motion.div variants={fadeUp}>
                 <FormInput
                     type="email"
-                    placeholder="Enter your email"
+                    placeholder="Email address"
                     value={email}
-                    onChange={(e) => {
-                        setEmail(e.target.value);
-                        setError("");
-                    }}
-                    disabled={isLoading}
+                    onChange={handleEmailChange}
+                    disabled={loading}
                     required
                     autoComplete="email"
+                    name="email"
                 />
             </motion.div>
 
-            {/* Password Input */}
             <motion.div variants={fadeUp}>
                 <FormInput
                     type="password"
-                    placeholder="Enter your password"
+                    placeholder="Password"
                     value={password}
-                    onChange={(e) => {
-                        setPassword(e.target.value);
-                        setError("");
-                    }}
-                    disabled={isLoading}
+                    onChange={handlePasswordChange}
+                    disabled={loading}
                     required
                     autoComplete="current-password"
+                    name="password"
                 />
             </motion.div>
 
-            {/* Forgot Password Link */}
             <motion.div variants={fadeUp} className="text-right">
-                <Link
-                    href="./forgot-password"
-                    className="text-sm text-bluelight-2 hover:underline transition-all duration-300"
-                >
+                <Link href={AUTH_ROUTES.FORGOT_PASSWORD} className="text-sm text-bluelight-2 hover:underline transition-all duration-300">
                     Forgot Password?
                 </Link>
             </motion.div>
 
-            {/* Login Button */}
             <motion.div variants={fadeUp}>
                 <button
                     type="submit"
-                    disabled={!email || !password || isLoading}
-                    className="w-full text-[1rem] sm:text-[1.1rem] 
-                             px-7 py-3.5 border-2 border-bluelight-2
-                             bg-gradient-to-r from-bluelight-2 to-bluelight-1
-                             hover:from-bluelight-1 hover:to-bluelight-2
-                             text-white font-medium
-                             rounded-xl transition-all duration-300
-                             hover:scale-[1.02] active:scale-[0.98]
-                             shadow-lg hover:shadow-xl
-                             relative overflow-hidden group
-                             disabled:opacity-50 disabled:cursor-not-allowed
-                             disabled:hover:scale-100"
+                    disabled={!email.trim() || !password.trim() || loading}
+                    className="w-full py-3.5 rounded-xl text-white font-medium bg-linear-to-r from-bluelight-2 to-bluelight-1
+                     disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 relative overflow-hidden group
+                     hover:scale-[1.05] active:scale-[0.90] hover:shadow-lg"
                 >
-                    <div className="absolute bg-gradient-to-r from-bluelight-2 to-bluelight-1 
-                                    w-full h-full bottom-0 group-hover:bottom-full 
-                                    transition-all duration-300" />
-
-                    <span className="relative z-10 flex items-center justify-center gap-2">
-                        {isLoading && (
-                            <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                            </svg>
-                        )}
-                        {isLoading ? 'Logging in...' : 'Login'}
-                    </span>
+                    {loading ? "Logging in..." : "Login"}
                 </button>
             </motion.div>
 
-            {/* Divider */}
             <AuthDivider />
 
-            {/* Register Links */}
-            <motion.div variants={fadeUp} className="space-y-3">
-                <p className="text-sm text-center text-bluelight-1/70">
+            <motion.div variants={fadeUp} className="text-center space-y-2">
+                <p className="text-sm text-bluelight-1/70">
                     Don't have an account?{" "}
-                    <button
-                        type="button"
-                        onClick={handleRegisterClick}
-                        className="text-bluelight-2 hover:underline transition-all duration-300"
-                    >
-                        Register your Business
-                    </button>
+                    <Link href={AUTH_ROUTES.REGISTER_BUSINESS} className="text-bluelight-2 hover:underline transition-all duration-300">
+                        Register Business
+                    </Link>
                 </p>
-
-                {/* إذا أردت إضافة خيار للتسجيل كفرد */}
-                <p className="text-sm text-center text-bluelight-1/70">
-                    Want to register as individual?{" "}
-                    <Link
-                        href="./register"
-                        className="text-bluelight-2 hover:underline transition-all duration-300"
-                    >
-                        Register as Individual
+                <p className="text-sm text-bluelight-1/70">
+                    Individual user?{" "}
+                    <Link href={`${AUTH_ROUTES.REGISTER}?userType=individual`} className="text-bluelight-2 hover:underline transition-all duration-300">
+                        Register here
                     </Link>
                 </p>
             </motion.div>

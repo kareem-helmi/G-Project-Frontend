@@ -1,5 +1,4 @@
 "use client";
-
 import React from "react";
 import { Mail, Smartphone, AlertTriangle } from "lucide-react";
 
@@ -28,8 +27,8 @@ export default function Notifications({
                 <button
                     onClick={() => onToggle("email")}
                     className={`px-3 py-1 rounded-lg font-medium transition-all ${notifications.email
-                            ? "bg-bluelight-2 text-white"
-                            : "border border-bluelight-1/30 text-bluelight-1"
+                        ? "bg-bluelight-2 text-white"
+                        : "border border-bluelight-1/30 text-bluelight-1"
                         }`}
                     aria-pressed={notifications.email}
                 >
@@ -53,8 +52,8 @@ export default function Notifications({
                 <button
                     onClick={() => onToggle("sms")}
                     className={`px-3 py-1 rounded-lg font-medium transition-all ${notifications.sms
-                            ? "bg-bluelight-2 text-white"
-                            : "border border-bluelight-1/30 text-bluelight-1"
+                        ? "bg-bluelight-2 text-white"
+                        : "border border-bluelight-1/30 text-bluelight-1"
                         }`}
                     aria-pressed={notifications.sms}
                 >
@@ -78,8 +77,8 @@ export default function Notifications({
                 <button
                     onClick={() => onToggle("highRiskAlerts")}
                     className={`px-3 py-1 rounded-lg font-medium transition-all ${notifications.highRiskAlerts
-                            ? "bg-red-600 text-white"
-                            : "border border-bluelight-1/30 text-bluelight-1"
+                        ? "bg-red-600 text-white"
+                        : "border border-bluelight-1/30 text-bluelight-1"
                         }`}
                     aria-pressed={notifications.highRiskAlerts}
                 >

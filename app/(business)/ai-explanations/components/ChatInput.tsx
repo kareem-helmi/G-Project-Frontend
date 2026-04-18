@@ -1,4 +1,3 @@
-// app/(business)/ai-explanations/components/ChatInput.tsx
 "use client";
 
 import React, { useRef, useEffect, KeyboardEvent } from "react";
@@ -78,31 +77,7 @@ export default function ChatInput({
     return (
         <div className="space-y-3">
             {/* File Preview */}
-            {attachedFile && (
-                <div className="flex items-center justify-between p-3 bg-gradient-to-r from-bluelight-1/5 to-cyan-500/5 border border-bluelight-1/20 rounded-lg">
-                    <div className="flex items-center gap-2">
-                        <div className="p-1.5 bg-white/80 dark:bg-gray-800/80 rounded">
-                            {getFileIcon(attachedFile.type)}
-                        </div>
-                        <div className="max-w-[180px]">
-                            <p className="text-sm font-medium text-bluelight-1 truncate">
-                                {attachedFile.name}
-                            </p>
-                            <p className="text-xs text-bluelight-1/60">
-                                {formatFileSize(attachedFile.size)}
-                            </p>
-                        </div>
-                    </div>
-                    <button
-                        onClick={onFileRemove}
-                        className="p-1.5 hover:bg-red-500/10 rounded"
-                        title="Remove file"
-                    >
-                        <X size={16} className="text-red-400 hover:text-red-500" />
-                    </button>
-                </div>
-            )}
-
+          
             {/* Main Input Container */}
             <div className="relative bg-white/95 dark:bg-gray-900/95 border-2 border-bluelight-1/30 rounded-xl p-3 backdrop-blur-sm">
                 {/* Text Input Area */}
@@ -127,7 +102,7 @@ export default function ChatInput({
                             flex items-center justify-center
                             ${disabled || (!value.trim() && !attachedFile)
                                 ? "bg-gray-300 dark:bg-gray-700 cursor-not-allowed opacity-50"
-                                : "bg-gradient-to-r from-bluelight-1 to-cyan-500 hover:from-bluelight-2 hover:to-cyan-600 active:scale-95"
+                                : "bg-linear-to-r from-bluelight-1 to-cyan-500 hover:from-bluelight-2 hover:to-cyan-600 active:scale-95"
                             }
                         `}
                         title="Send message"

@@ -1,4 +1,3 @@
-// app/(business)/upload-data/components/AnalysisResult.tsx
 "use client";
 
 import React from "react";
@@ -34,7 +33,7 @@ export default function AnalysisResult({ status, riskLevel, advice, onNewAnalysi
     };
 
     return (
-        <div className="bg-gradient-to-br from-bluelight-1/5 to-cyan-500/5 border-2 border-bluelight-1/40 rounded-2xl p-6">
+        <div className="bg-linear-to-br from-bluelight-1/5 to-cyan-500/5 border-2 border-bluelight-1/40 rounded-2xl p-6">
             <div className="flex items-center justify-between mb-6">
                 <h3 className="text-xl font-bold text-bluelight-1">Analysis Results</h3>
                 {onNewAnalysis && (

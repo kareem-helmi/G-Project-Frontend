@@ -1,6 +1,5 @@
 import React from "react";
 
-
 export default function SaveBar({ dirty, saving, onSave }: { dirty: boolean; saving: boolean; onSave: () => void }) {
     return (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">

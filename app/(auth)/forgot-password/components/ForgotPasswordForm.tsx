@@ -1,72 +1,104 @@
-// app/auth/forgot-password/components/ForgotPasswordForm.tsx
 "use client";
+
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { FormInput } from "../../shared/FormInput";
-import { fadeUp } from "../../shared/motion-variants";
 import MainButton from "@/components/custom/MainButton";
 
+const FADE_UP = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1, transition: { duration: 0.4 } }
+};
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 export function ForgotPasswordForm() {
-    const [email, setEmail] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
 
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!email) return;
+    const [email, setEmail] = useState("");
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
 
-        setIsLoading(true);
-        try {
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            sessionStorage.setItem('resetPasswordEmail', email);
-            router.push('./verification-code');
-        } catch (error) {
-            console.error("Error:", error);
-        } finally {
-            setIsLoading(false);
+    function validateEmail(value: string): boolean {
+        if (!value.trim()) {
+            setError("Email is required");
+            return false;
         }
-    };
+        if (!EMAIL_REGEX.test(value)) {
+            setError("Please enter a valid email");
+            return false;
+        }
+        setError("");
+        return true;
+    }
+
+    async function handleSubmit(e: React.FormEvent) {
+        e.preventDefault();
+
+        if (!validateEmail(email)) return;
+
+        setLoading(true);
+        try {
+            // TODO: Replace with actual API call
+            await new Promise((resolve) => setTimeout(resolve, 1000));
+
+            // ✅ FIX: Navigate with email in URL params
+            router.push(`/verification-code?email=${encodeURIComponent(email.trim())}`);
+        } catch (err) {
+            console.error("Forgot password error:", err);
+            setError("Something went wrong. Please try again.");
+        } finally {
+            setLoading(false);
+        }
+    }
 
     return (
-        <motion.form
-            onSubmit={handleSubmit}
-            className="flex flex-col gap-5 sm:gap-6 w-full max-w-[380px] mt-2"
-        >
-            <motion.div variants={fadeUp}>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5 w-full max-w-[380px] mt-4">
+            {error && (
+                <motion.div
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="p-3 rounded-lg text-sm bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400"
+                    role="alert"
+                >
+                    {error}
+                </motion.div>
+            )}
+
+            <motion.div variants={FADE_UP}>
                 <FormInput
                     type="email"
-                    placeholder="Enter your email address"
+                    placeholder="Email address"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    disabled={isLoading}
+                    onChange={(e) => {
+                        setEmail(e.target.value);
+                        setError("");
+                    }}
+                    disabled={loading}
                     required
                     autoComplete="email"
                 />
             </motion.div>
 
-            <motion.div variants={fadeUp}>
+            <motion.div variants={FADE_UP}>
                 <MainButton
                     type="submit"
-                    disabled={!email || isLoading}
-                    className={`w-full text-[1rem] sm:text-[1.1rem] 
-                     px-7 py-3.5 border transition-all duration-300
-                     ${email && !isLoading
-                            ? 'bg-bluelight-2 hover:bg-transparent'
-                            : 'bg-bluelight-2/50 cursor-not-allowed'}`}
-                    background={email && !isLoading ? "bg-bluelight-2 w-full h-full bottom-0 group-hover:bottom-full" : ""}
+                    disabled={loading}
+                    className="w-full text-[1rem] px-7 py-3.5 border"
+                    background="bg-bluelight-2 w-full h-full bottom-0 group-hover:bottom-full"
                 >
-                    {isLoading ? 'Sending...' : 'Send Verification Code'}
+                    {loading ? "Sending..." : "Send Verification Code"}
                 </MainButton>
             </motion.div>
 
-            <motion.div variants={fadeUp} className="text-sm text-center text-bluelight-1/70">
+            <motion.div variants={FADE_UP} className="text-center text-sm text-bluelight-1/70">
                 Remember your password?{" "}
-                <a href="./login" className="text-bluelight-2 hover:underline transition-all duration-300">
+                <Link href="/login" className="text-bluelight-2 hover:underline transition-all duration-300">
                     Back to Login
-                </a>
+                </Link>
             </motion.div>
-        </motion.form>
+        </form>
     );
 }

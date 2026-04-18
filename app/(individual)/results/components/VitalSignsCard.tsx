@@ -1,6 +1,6 @@
 "use client";
 import { motion } from "framer-motion";
-import { VitalSign } from "../../lib/types";
+import { VitalSign } from "@/types/individual.types";
 
 interface VitalSignCardProps {
     vital: VitalSign;

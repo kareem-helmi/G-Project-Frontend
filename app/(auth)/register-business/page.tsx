@@ -1,4 +1,3 @@
-// app/auth/register-business/page.tsx
 "use client";
 import { motion, Variants } from "framer-motion";
 import AuthContainer from "../shared/AuthContainer";
@@ -25,11 +24,11 @@ export default function RoleSelectionPage() {
 
       <motion.div
         variants={fadeUp}
+
         className="flex flex-col gap-5 sm:gap-6 w-full max-w-[380px] mt-2"
       >
-        {/* ✅ تصحيح المسار */}
         <MainButton
-          href="/register-business/doctor" // ❌ /auth/register-business/doctor → ✅ /register-business/doctor
+          href="/register-business/doctor"
           className="w-full text-[1rem] sm:text-[1.1rem] 
                      px-7 py-3.5 border bg-bluelight-2 
                      hover:bg-transparent transition-all duration-300"
@@ -41,7 +40,6 @@ export default function RoleSelectionPage() {
           </span>
         </MainButton>
 
-        {/* ✅ تصحيح المسار */}
         <MainButton
           href="/register-business/institution"
           className="w-full text-[1rem] sm:text-[1.1rem] 

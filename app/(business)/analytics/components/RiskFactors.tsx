@@ -1,8 +1,8 @@
-// app/(business)/analytics/components/RiskFactors.tsx
 "use client";
 
 import React from "react";
 import { motion } from "framer-motion";
+import { getImpactColorClasses } from "@/lib/utils/analytics.utils";
 
 interface RiskFactor {
     title: string;
@@ -15,40 +15,35 @@ interface RiskFactorsProps {
 }
 
 export default function RiskFactors({ riskFactors }: RiskFactorsProps) {
-    const impactColors = {
-        Low: "bg-green-500",
-        Medium: "bg-yellow-500",
-        High: "bg-red-500",
-    };
-
-    const impactTextColors = {
-        Low: "text-green-600",
-        Medium: "text-yellow-600",
-        High: "text-red-600",
-    };
-
     return (
         <div className="space-y-5">
-            {riskFactors.map((factor, index) => (
-                <div key={factor.title} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-bluelight-1">
-                            {factor.title}
-                        </span>
-                        <span className={`text-xs font-semibold ${impactTextColors[factor.impact]}`}>
-                            {factor.impact} Impact
-                        </span>
+            {riskFactors.map((factor, index) => {
+                const colors = getImpactColorClasses(factor.impact);
+
+                return (
+                    <div key={factor.title} className="space-y-2">
+                        {/* Factor Label */}
+                        <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium text-bluelight-1">
+                                {factor.title}
+                            </span>
+                            <span className={`text-xs font-semibold ${colors.text}`}>
+                                {factor.impact} Impact
+                            </span>
+                        </div>
+
+                        {/* Progress Bar */}
+                        <div className="w-full h-2 bg-bluelight-1/20 dark:bg-gray-700/50 rounded-full overflow-hidden">
+                            <motion.div
+                                initial={{ width: 0 }}
+                                animate={{ width: `${factor.value}%` }}
+                                transition={{ duration: 1, delay: index * 0.1 }}
+                                className={`h-full ${colors.bg}`}
+                            />
+                        </div>
                     </div>
-                    <div className="w-full h-2 bg-bluelight-1/20 rounded-full overflow-hidden">
-                        <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${factor.value}%` }}
-                            transition={{ duration: 1, delay: index * 0.1 }}
-                            className={`h-full ${impactColors[factor.impact]}`}
-                        />
-                    </div>
-                </div>
-            ))}
+                );
+            })}
         </div>
     );
 }

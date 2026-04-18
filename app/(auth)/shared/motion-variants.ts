@@ -1,4 +1,3 @@
-// app/auth/shared/motion-variants.ts
 import { Variants } from "framer-motion";
 
 // Container Variants
