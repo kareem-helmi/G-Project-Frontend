@@ -18,7 +18,7 @@ const HomeBox = ({ motionProps, onInstitutionClick, onIndividualClick }: HomeBox
             className="w-[90%] h-[90%] md:w-[80%] md:h-[80%] p-5 relative flex flex-col gap-8 sm:gap-12 md:gap-20 lg:gap-32 items-center justify-center rounded-[35px] shadow-[-1px_-3px_62px_11px_var(--color-bluelight-shade)]">
 
             <ThemeToggleDefault
-                className="absolute top-10 right-10"
+                className="absolute top-5 right-5"
             />
 
             <div className="text-content flex flex-col">
@@ -47,7 +47,7 @@ const HomeBox = ({ motionProps, onInstitutionClick, onIndividualClick }: HomeBox
                 <MainButton
 
                     onClick={onInstitutionClick}
-                    className="text-[1rem] mb-0 w-85 md:text-[1.2rem] px-20 py-4 border bg-bluelight-2 hover:bg-transparent"
+                    className="text-[1rem] mb-0 w-70 md:text-[1.2rem] px-10 py-4 border bg-bluelight-2 hover:bg-transparent"
                     background="bg-bluelight-2 w-full h-full bottom-0 group-hover:bottom-full"
                     motionProps={{
                         initial: { x: -50, opacity: 0 },
@@ -60,7 +60,7 @@ const HomeBox = ({ motionProps, onInstitutionClick, onIndividualClick }: HomeBox
                 <MainButton
 
                     onClick={onIndividualClick}
-                    className="border w-85 text-[1rem] md:text-[1.2rem] px-20 py-4 backdrop-blur-sm bg-bluelight-2/10"
+                    className="border w-70 text-[1rem] md:text-[1.2rem] px-10 py-4 backdrop-blur-sm bg-bluelight-2/10"
                     classHover="bg-bluelight-2 w-full h-full top-full group-hover:top-0"
                     motionProps={{
                         initial: { x: 50, opacity: 0 },

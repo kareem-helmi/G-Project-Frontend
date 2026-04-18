@@ -90,6 +90,7 @@ export const BUSINESS_NAV_ITEMS = [
     { title: "Upload Data", href: "/upload-data" },
     { title: "Reports", href: "/reports" },
     { title: "Settings", href: "/settings-business" },
+    { href: "/", title: "Home" }, 
 ] as const;
 
 /**

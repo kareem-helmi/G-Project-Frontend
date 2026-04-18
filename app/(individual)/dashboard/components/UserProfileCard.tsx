@@ -45,8 +45,7 @@ export default function UserProfileCard({ patient }: UserProfileCardProps) {
                    transition-transform duration-200 transform 
                    hover:scale-105 hover:shadow-md flex items-center justify-center gap-2"
                     >
-                        <span className="text-lg">➕</span>
-                        <span className="font-medium">New Analysis</span>
+                        <span className="font-medium"> Add New Analysis</span>
                     </button>
 
                     <button
@@ -55,7 +54,6 @@ export default function UserProfileCard({ patient }: UserProfileCardProps) {
                    transition-transform duration-200 transform 
                    hover:scale-105 hover:shadow-md hover:bg-bluelight-1/10 flex items-center justify-center gap-2"
                     >
-                        <span className="text-lg">⚙️</span>
                         <span className="font-medium">Settings</span>
                     </button>
 
@@ -65,7 +63,6 @@ export default function UserProfileCard({ patient }: UserProfileCardProps) {
                    transition-transform duration-200 transform 
                    hover:scale-105 hover:shadow-md hover:bg-red-500/10 flex items-center justify-center gap-2"
                     >
-                        <span className="text-lg">🚪</span>
                         <span className="font-medium">Logout</span>
                     </button>
                 </div>

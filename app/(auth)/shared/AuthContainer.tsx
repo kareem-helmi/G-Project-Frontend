@@ -1,5 +1,6 @@
 "use client";
 import { motion, Variants } from "framer-motion";
+import { useRouter } from "next/navigation";
 import ThemeToggleDefault from "@/components/custom/ThemeToggleDefault";
 import { ReactNode } from "react";
 
@@ -7,7 +8,7 @@ interface AuthContainerProps {
     children: ReactNode;
     minHeight?: string;
     showBackButton?: boolean;
-    onBack?: () => void;
+    onBack?: () => void;  
 }
 
 const containerVariants: Variants = {
@@ -22,9 +23,12 @@ const containerVariants: Variants = {
 export default function AuthContainer({
     children,
     minHeight = "auto",
-    showBackButton = false,
+    showBackButton = true,
     onBack
 }: AuthContainerProps) {
+    const router = useRouter();
+    const handleBack = onBack ?? (() => router.back()); // لو مفيش onBack يعمل router.back
+
     return (
         <div className="w-full min-h-screen flex items-center justify-center p-4 sm:p-6 lg:p-8">
             <motion.div
@@ -47,9 +51,9 @@ export default function AuthContainer({
                     <ThemeToggleDefault />
                 </motion.div>
 
-                {showBackButton && onBack && (
+                {showBackButton && (  // ← بقى شرط واحد بس
                     <button
-                        onClick={onBack}
+                        onClick={handleBack}
                         className="absolute top-3 left-3 sm:top-5 sm:left-5 z-10
                        text-bluelight-1/80 hover:text-bluelight-1
                        transition-all duration-300

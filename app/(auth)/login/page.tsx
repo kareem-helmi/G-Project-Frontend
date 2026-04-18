@@ -8,7 +8,7 @@ import { containerVariants } from "../shared/motion-variants";
 
 export default function LoginPage() {
   return (
-    <AuthContainer>
+    <AuthContainer >
       <motion.div
         variants={containerVariants}
         initial="hidden"
@@ -16,7 +16,6 @@ export default function LoginPage() {
         className="w-full relative z-0"
       >
         <AuthHeader
-          title="AI Disease Progression Predictor"
           subtitle="Login"
         />
       </motion.div>

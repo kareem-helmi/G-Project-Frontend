@@ -2,9 +2,10 @@
 import { motion, Variants } from "framer-motion";
 import Title from "@/components/custom/Title";
 import SubTitle from "@/components/custom/SubTitle";
+import { ReactNode } from "react";
 
 interface AuthHeaderProps {
-    title?: string;
+    title?: ReactNode;
     subtitle: string;
     description?: string;
 
@@ -20,7 +21,7 @@ const fadeUp: Variants = {
 };
 
 export function AuthHeader({
-    title = "AI Disease Progression Predictor",
+    title = <>AI Disease <br />  Progression Predictor</>,
     subtitle,
     description
 }: AuthHeaderProps) {

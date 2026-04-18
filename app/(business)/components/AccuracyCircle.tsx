@@ -12,7 +12,7 @@ type Props = {
 
 export default function AccuracyCircle({
     value = 0,
-    size = 150,
+    size = 120,
     strokeColor = "#4A90E2",
     strokeWidth = 8,
 }: Props) {
@@ -22,7 +22,7 @@ export default function AccuracyCircle({
     const offset = dash - (dash * display) / 100;
 
     return (
-        <div style={{ width: size, height: size }} className="relative mt-20 mb-4">
+        <div style={{ width: size, height: size }} className="relative  mb-4">
             <svg viewBox="0 0 100 100" className="w-full h-full">
                 <circle
                     cx="50"

@@ -20,7 +20,6 @@ function Fallback() {
 export default function ForgotPasswordPage() {
   return (
     <AuthContainer>
-      <ThemeToggleDefault />
       <motion.div variants={containerVariants} initial="hidden" animate="visible" className="w-full flex flex-col items-center gap-6">
         <AuthHeader
           subtitle="Forgot Password"

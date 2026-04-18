@@ -110,17 +110,6 @@ export default function SettingsPage() {
         }
     };
 
-    const handleLogout = () => {
-        if (confirm("Are you sure you want to logout?")) {
-            tempStorage.remove(SETTINGS_KEY);
-            tempStorage.remove(USER_INFO_KEY);
-            tempStorage.remove("lastSubmissionId");
-            tempStorage.remove("resultsData");
-            logout();
-            router.push("/");
-        }
-    };
-
     // ==========================================
     // RENDER
     // ==========================================
@@ -276,10 +265,10 @@ export default function SettingsPage() {
                                 Reset to Default
                             </button>
                             <button
-                                onClick={handleLogout}
+                                 onClick={() => router.back()}
                                 className="px-6 py-3 border-2 border-red-500/40 text-red-500 dark:text-red-400 rounded-lg hover:bg-red-500/10 transition-all duration-300"
                             >
-                                Logout
+                                Exit
                             </button>
                         </div>
                         <MainButton

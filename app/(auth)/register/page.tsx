@@ -27,7 +27,6 @@ export default function RegisterPage() {
         className="w-full"
       >
         <AuthHeader
-          title="AI Disease Progression Predictor"
           subtitle="Create Account"
         />
       </motion.div>
